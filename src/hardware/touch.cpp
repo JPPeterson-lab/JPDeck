@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Based on esp_lcd_touch: Copyright 2015-2024 Espressif Systems (Shanghai) CO LTD, Apache-2.0
+// Modifications: Copyright 2026 Jan Althaus (JPPeterson-lab)
 #include <stdlib.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

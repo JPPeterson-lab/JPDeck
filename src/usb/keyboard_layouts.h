@@ -1,6 +1,10 @@
 #pragma once
-// Tastaturlayouts (ASCII -> HID-Tastencode): Tabellen aus der Arduino-ESP32-USB-Bibliothek (USBHIDKeyboard, LGPL-2.1),
-// hier ohne Arduino-Klassen, damit der ESP-IDF-Build sie nutzen kann. Bit 0x80 = Shift, 0x40 = AltGr.
+// SPDX-License-Identifier: LGPL-2.1-only
+// Tastaturlayouts (ASCII -> HID-Tastencode): Tabellen aus der Arduino-ESP32-USB-Bibliothek (USBHIDKeyboard; Copyright der Arduino-ESP32-Autoren,
+// GNU Lesser General Public License 2.1, Text in LICENSES/LGPL-2.1.txt), hier ohne Arduino-Klassen, damit der
+// ESP-IDF-Build sie nutzen kann. Diese Datei bleibt unter der LGPL-2.1; der gesamte Quelltext der Firmware liegt offen in diesem
+// Repository, die Firmware kann damit jederzeit neu gebaut und ersetzt werden.
+// Bit 0x80 = Shift, 0x40 = AltGr.
 #include <stdint.h>
 #define DECK_KL_SHIFT 0x80
 #define DECK_KL_ALT_GR 0x40

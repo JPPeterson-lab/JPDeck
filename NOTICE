@@ -1,0 +1,18 @@
+DeckPad
+Copyright 2026 Jan Althaus (JPPeterson-lab)
+
+Licensed under the MIT License (see the file LICENSE).
+
+Files of third parties keep their own licences. They are marked in their file headers; the licence texts are in LICENSES/:
+  - src/hardware/i2c.*, io_extension.*, rgb_lcd_port.*: Waveshare example code for the ESP32-S3-Touch-LCD-7B
+    (https://github.com/waveshareteam/esp32-s3-touch-lcd-7b), Apache-2.0, modified
+  - src/hardware/touch.*, gt911.*: Espressif esp_lcd_touch (touch driver), Apache-2.0, modified
+  - src/usb/keyboard_layouts.h: keyboard layout tables of the Arduino-ESP32 USB library (USBHIDKeyboard), LGPL-2.1.
+    The complete source code of the firmware is in this repository, so the firmware can be rebuilt and replaced at any time.
+
+This product also includes software, icons and fonts of third parties (details in CREDITS.md):
+  - ESP-IDF and Arduino-ESP32 (Espressif Systems), Apache-2.0 and LGPL-2.1
+  - LVGL, MIT (includes LodePNG, zlib)
+  - ArduinoJson (Benoit Blanchon), MIT
+  - Bootstrap Icons (The Bootstrap Authors), MIT
+  - Montserrat (The Montserrat Project Authors), SIL Open Font License 1.1

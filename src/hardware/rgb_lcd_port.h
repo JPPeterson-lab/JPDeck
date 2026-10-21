@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Original code: Copyright Waveshare team, Apache-2.0 (https://github.com/waveshareteam/esp32-s3-touch-lcd-7b)
+// Modifications: Copyright 2026 Jan Althaus (JPPeterson-lab)
 /*****************************************************************************
  * | File        :   rgb_lcd_port.h
  * | Author      :   Waveshare team

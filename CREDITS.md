@@ -7,8 +7,8 @@ sind nachfolgend aufgeführt.
 
 ## Treiber
 
-**Quelle:** Waveshare-Beispielcode für das ESP32-S3-Touch-LCD-7B (RGB-Panel, I²C, IO-Expander) sowie der GT911-Treiber auf Basis von Espressif `esp_lcd_touch`
-(Apache License 2.0, © Espressif Systems (Shanghai) CO LTD). Siehe Dateikopf in `src/hardware/`.
+**Quelle:** Waveshare-Beispielcode für das ESP32-S3-Touch-LCD-7B (RGB-Panel, I²C, IO-Expander; [waveshareteam/esp32-s3-touch-lcd-7b](https://github.com/waveshareteam/esp32-s3-touch-lcd-7b)) sowie der Touch-Treiber auf Basis von Espressif `esp_lcd_touch` (GT911)
+(jeweils Apache License 2.0, © Waveshare bzw. © Espressif Systems (Shanghai) CO LTD, verändert). Siehe Dateikopf in `src/hardware/` und `LICENSES/Apache-2.0.txt`.
 
 ---
 
@@ -34,7 +34,7 @@ Bis v0.6.0 stammten die Symbole aus den [Flat Color Icons](https://github.com/ic
 
 ## Tastaturlayouts
 
-`src/usb/keyboard_layouts.h`: ASCII→HID-Tabellen (Deutsch, US) aus der USB-Bibliothek von Arduino-ESP32 (`USBHIDKeyboard`, LGPL-2.1).
+`src/usb/keyboard_layouts.h`: ASCII→HID-Tabellen (Deutsch, US) aus der USB-Bibliothek von Arduino-ESP32 (`USBHIDKeyboard`, LGPL-2.1, Text in `LICENSES/LGPL-2.1.txt`). Die Datei bleibt unter der LGPL; der gesamte Quelltext der Firmware liegt offen in diesem Repository, sie lässt sich also jederzeit neu bauen und ersetzen.
 
 ## Oberfläche & Schrift
 

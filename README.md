@@ -169,7 +169,7 @@ Ausführliche Seiten (Hardware, Inbetriebnahme, Profile, USB und CDC, Entwicklun
 Siehe [CREDITS.md](CREDITS.md). GUI: [LVGL](https://lvgl.io). Oberfläche: [PicoPixel](https://picopixel.io), Icons: [Bootstrap Icons](https://icons.getbootstrap.com/). Treiber: Waveshare / Espressif.
 
 ## 📄 Lizenz
-[MIT](LICENSE) – Drittkomponenten siehe [CREDITS.md](CREDITS.md).
+[MIT](LICENSE). Einzelne Dateien von Dritten behalten ihre Lizenz (Waveshare-/Espressif-Treiber: Apache-2.0, Tastaturlayouts: LGPL-2.1), siehe [NOTICE](NOTICE), [CREDITS.md](CREDITS.md) und `LICENSES/`.
 
 ---
 ---
@@ -296,4 +296,4 @@ Detailed pages (hardware, getting started, profiles, USB and CDC, development): 
 See [CREDITS.md](CREDITS.md). GUI: [LVGL](https://lvgl.io). UI design: [PicoPixel](https://picopixel.io), icons: [Bootstrap Icons](https://icons.getbootstrap.com/). Drivers: Waveshare / Espressif.
 
 ## 📄 License
-[MIT](LICENSE) – third-party components: see [CREDITS.md](CREDITS.md).
+[MIT](LICENSE). Individual third-party files keep their licence (Waveshare/Espressif drivers: Apache-2.0, keyboard layouts: LGPL-2.1), see [NOTICE](NOTICE), [CREDITS.md](CREDITS.md) and `LICENSES/`.
