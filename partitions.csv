@@ -1,0 +1,8 @@
+# DeckPad - Custom Partition Table (16 MB Flash, Waveshare ESP32-S3-Touch-LCD-7B)
+# Kein OTA: eine einzige Factory-App, der Rest gehoert den Nutzerdaten (Profile, Icons).
+# Alle Offsets 4 KB-, App-Offsets 64 KB-ausgerichtet; 0x400000 = 4 MB.
+# Name,     Type, SubType,  Offset,    Size,      Flags
+nvs,        data, nvs,      0x9000,    0x6000,
+factory,    app,  factory,  0x10000,   0x400000,
+coredump,   data, coredump, 0x410000,  0x10000,
+storage,    data, spiffs,   0x420000,  0xBE0000,

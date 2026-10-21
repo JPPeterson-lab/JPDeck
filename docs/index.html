@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeckPad – Web-Installer</title>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, Segoe UI, Arial, sans-serif; background: #0d1117; color: #e6edf3; margin: 0; padding: 20px; min-height: 100vh; }
+    .container { max-width: 640px; margin: 0 auto; }
+    h1 { color: #58a6ff; font-size: 1.8em; margin: 0 0 4px; }
+    .subtitle { color: #8b949e; margin: 0 0 24px; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+    h2 { color: #e6edf3; font-size: 1.1em; margin: 0 0 12px; }
+    p, li { color: #8b949e; font-size: .92em; line-height: 1.55; }
+    p strong, li strong { color: #c9d1d9; }
+    esp-web-install-button { display: block; margin-top: 16px; }
+    esp-web-install-button::part(button) { background: #238636; color: #fff; border: none; border-radius: 4px; padding: 10px 20px; font-size: 1em; cursor: pointer; }
+    esp-web-install-button::part(button):hover { background: #2ea043; }
+    .badge { display: inline-block; background: #30363d; color: #8b949e; font-size: .75em; padding: 2px 8px; border-radius: 12px; margin-left: 8px; vertical-align: middle; }
+    .steps { list-style: none; padding: 0; counter-reset: step; margin: 0; }
+    .steps li { counter-increment: step; padding: 8px 0 8px 36px; position: relative; border-bottom: 1px solid #21262d; }
+    .steps li:last-child { border-bottom: none; }
+    .steps li::before { content: counter(step); position: absolute; left: 0; top: 9px; background: #1f6feb; color: #fff; width: 22px; height: 22px; border-radius: 50%; font-size: .75em; display: flex; align-items: center; justify-content: center; }
+    .warn { border-left: 3px solid #d29922; padding: 4px 12px; background: #1c1708; border-radius: 0 4px 4px 0; }
+    .links a { display: inline-block; margin: 4px 8px 4px 0; padding: 6px 12px; border: 1px solid #30363d; border-radius: 6px; text-decoration: none; }
+    .lang { float: right; font-size: .8em; }
+    .lang button { background: #21262d; color: #8b949e; border: 1px solid #30363d; padding: 2px 8px; cursor: pointer; }
+    .lang button.on { color: #e6edf3; background: #30363d; }
+    a { color: #58a6ff; }
+    footer { color: #484f58; font-size: .8em; text-align: center; margin-top: 30px; }
+    body[data-lang="de"] .en, body[data-lang="en"] .de { display: none; }
+  </style>
+</head>
+<body data-lang="de">
+<div class="container">
+  <div class="lang"><button id="bde" class="on">DE</button><button id="ben">EN</button></div>
+  <h1>DeckPad <span class="badge">v0.6.1</span></h1>
+  <p class="subtitle">
+    <span class="de">Stream-Deck-artiges Touch-Pad auf dem Waveshare ESP32-S3-Touch-LCD-7B – Tastatur und COM-Port am Windows-PC</span>
+    <span class="en">Stream-Deck-style touch pad on the Waveshare ESP32-S3-Touch-LCD-7B – keyboard and COM port on the Windows PC</span>
+  </p>
+
+  <div class="card">
+    <h2><span class="de">Firmware installieren</span><span class="en">Install firmware</span></h2>
+    <ol class="steps">
+      <li class="de"><strong>Chrome oder Edge</strong> verwenden (Web Serial).</li>
+      <li class="de">Das Board über die Buchse <strong>„UART“</strong> mit dem Computer verbinden. <strong>Die Buchse „USB“ (nativ) muss dabei frei sein</strong>, sonst bricht die Installation ab.</li>
+      <li class="de">Auf „Installieren“ klicken und im Fenster den Port <strong>„USB-Enhanced-SERIAL CH343“</strong> wählen.</li>
+      <li class="de">Nach der Installation das Kabel der Buchse <strong>„USB“</strong> mit dem PC verbinden. Windows richtet das Gerät beim ersten Mal selbst ein (Tastatur und COM-Port).</li>
+      <li class="en"><strong>Use Chrome or Edge</strong> (Web Serial).</li>
+      <li class="en">Connect the board via the <strong>"UART"</strong> port. <strong>The "USB" (native) port must be free</strong>, otherwise the installation aborts.</li>
+      <li class="en">Click "Install" and choose the port <strong>"USB-Enhanced-SERIAL CH343"</strong> in the dialog.</li>
+      <li class="en">After the installation connect the cable of the <strong>"USB"</strong> port to the PC. Windows sets the device up by itself the first time (keyboard and COM port).</li>
+    </ol>
+    <p class="warn de"><strong>Achtung:</strong> Die Option „Gerät löschen“ löscht den ganzen Flash-Speicher, auch gespeicherte <strong>Profile und Icons</strong>. Ohne diese Option bleiben sie erhalten (Update).</p>
+    <p class="warn en"><strong>Note:</strong> The "erase device" option erases the whole flash, including saved <strong>profiles and icons</strong>. Without it they are kept (update).</p>
+    <esp-web-install-button manifest="manifest.json"></esp-web-install-button>
+  </div>
+
+  <div class="card links">
+    <h2><span class="de">Werkzeuge für den PC</span><span class="en">Tools for the PC</span></h2>
+    <p class="de">Profile, Tasten, Farben und Icons am PC bearbeiten (Chrome oder Edge, Board per „USB“ verbunden). Für den automatischen Profilwechsel und den Helfer-Modus zusätzlich das kleine Helfer-Programm.</p>
+    <p class="en">Edit profiles, keys, colours and icons on the PC (Chrome or Edge, board connected via "USB"). For the automatic profile switch and helper mode also the small helper program.</p>
+    <a href="editor.html"><span class="de">Profil-Editor öffnen</span><span class="en">Open profile editor</span></a>
+    <a href="DeckPad-Helper.exe" download><span class="de">Helfer herunterladen (DeckPad-Helper.exe)</span><span class="en">Download helper (DeckPad-Helper.exe)</span></a>
+    <p class="de" style="margin-top:.6rem;font-size:.85em">Läuft nur, wenn Sie es starten (Autostart ist optional, standardmäßig aus). Windows warnt vor der ungesignierten Datei: <b>Weitere Informationen → Trotzdem ausführen</b>.</p>
+    <p class="en" style="margin-top:.6rem;font-size:.85em">Runs only when you start it (autostart is optional, off by default). Windows warns about the unsigned file: <b>More info → Run anyway</b>.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="de">Hinweise</span><span class="en">Notes</span></h2>
+    <p class="de"><strong>Warum ein Installer?</strong> Das Projekt wechselt mittelfristig von der Arduino IDE auf <strong>ESP-IDF</strong> (damit gibt es keine Bildstreifen beim Speichern, kein Flimmern und eine saubere USB-Schicht). Selbst bauen ist möglich, setzt aber gute Kenntnisse im ESP32-Umfeld voraus (ESP-IDF, Partitionen, Flash-Optionen). Wer das nicht braucht, nutzt am besten diesen Installer.</p>
+    <p class="en"><strong>Why an installer?</strong> The project is moving from the Arduino IDE to <strong>ESP-IDF</strong> in the medium term (no streaks when saving, no flicker, a clean USB layer). Building it yourself is possible but requires good knowledge of the ESP32 world (ESP-IDF, partitions, flash options). If you do not need that, use this installer.</p>
+    <p class="de"><strong>Hardware:</strong> Waveshare ESP32-S3-Touch-LCD-7B · 7&quot; 1024×600 RGB-Display · GT911-Touch · 16 MB Flash, 8 MB PSRAM<br>
+      <strong>Quellcode:</strong> <a href="https://github.com/JPPeterson-lab/DeckPad" target="_blank">JPPeterson-lab/DeckPad</a> · <a href="https://github.com/JPPeterson-lab/DeckPad/wiki" target="_blank">Wiki</a></p>
+    <p class="en"><strong>Hardware:</strong> Waveshare ESP32-S3-Touch-LCD-7B · 7&quot; 1024×600 RGB display · GT911 touch · 16 MB flash, 8 MB PSRAM<br>
+      <strong>Source:</strong> <a href="https://github.com/JPPeterson-lab/DeckPad" target="_blank">JPPeterson-lab/DeckPad</a> · <a href="https://github.com/JPPeterson-lab/DeckPad/wiki" target="_blank">Wiki</a></p>
+  </div>
+
+  <footer>DeckPad · MIT · JPPeterson-lab<br>UI: <a href="https://picopixel.io" target="_blank">PicoPixel</a> · Icons: <a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a> (MIT)</footer>
+</div>
+<script>
+  const set = l => { document.body.dataset.lang = l; document.documentElement.lang = l;
+    document.getElementById('bde').classList.toggle('on', l === 'de'); document.getElementById('ben').classList.toggle('on', l === 'en');
+    try { localStorage.setItem('lang', l); } catch (e) {} };
+  document.getElementById('bde').onclick = () => set('de'); document.getElementById('ben').onclick = () => set('en');
+  let l = 'de'; try { l = localStorage.getItem('lang') || (navigator.language || 'de').slice(0, 2); } catch (e) {}
+  set(l === 'en' ? 'en' : 'de');
+</script>
+</body>
+</html>

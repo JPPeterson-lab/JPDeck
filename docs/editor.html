@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeckPad Editor</title>
+<style>
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --text:#1d2733; --muted:#66727f; --line:#d9dfe6;
+  --accent:#2f6fdb; --accent-text:#ffffff; --danger:#c0392b; --ok:#1e8e4e; --code:#eef1f5;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#11171f; --panel:#1a222d; --text:#e6ebf1; --muted:#93a0ae; --line:#2c3846;
+         --accent:#5b97f5; --accent-text:#0b1220; --danger:#ef6a5b; --ok:#46c07d; --code:#101820; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,Segoe UI,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:18px;margin:0 8px 0 0}
+.pill{padding:3px 10px;border-radius:99px;font-size:13px;background:var(--code);color:var(--muted)}
+.pill.on{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+main{display:grid;grid-template-columns:260px 1fr;gap:16px;padding:16px 20px;max-width:1200px;margin:0 auto}
+@media (max-width:820px){main{grid-template-columns:1fr}}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+h2{font-size:14px;margin:0 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+button,select,input,textarea{font:inherit;color:inherit}
+button{background:var(--code);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+button.danger{color:var(--danger)}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:6px 8px;width:100%}
+textarea{resize:vertical}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+#profiles{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.prof{padding:8px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer;background:var(--bg)}
+.prof.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.prof small{display:block;color:var(--muted)}
+.badge{font-size:11px;background:var(--accent);color:var(--accent-text);border-radius:99px;padding:1px 7px;margin-left:6px}
+#deck{display:grid;gap:8px;margin:8px 0}
+.tile{min-height:72px;border:2px solid transparent;border-radius:12px;color:#fff;font-weight:600;white-space:pre-line;
+      text-shadow:0 1px 2px rgba(0,0,0,.35);cursor:pointer;padding:6px;overflow:hidden;word-break:break-word}
+.tile[draggable=true]{cursor:grab}
+.tile.over{outline:2px dashed var(--accent);outline-offset:-4px}
+.tile.empty{background:var(--code)!important;color:var(--muted);border:2px dashed var(--line);text-shadow:none;font-weight:400}
+.tile.sel{border-color:var(--text);outline:2px solid var(--accent)}
+.swatches{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.sw{width:26px;height:26px;border-radius:6px;border:2px solid var(--line);cursor:pointer;padding:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips label{display:flex;gap:4px;align-items:center;margin:0;padding:4px 8px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--text);font-size:14px}
+.chips input{width:auto}
+.hint{color:var(--muted);font-size:13px;margin:4px 0 0}
+#console{background:var(--code);border-radius:8px;padding:8px 10px;height:170px;overflow:auto;font:12px/1.4 ui-monospace,Consolas,monospace;white-space:pre-wrap}
+.out{color:var(--accent)} .err{color:var(--danger)}
+.hidden{display:none}
+.tile img{display:block;margin:0 auto 2px;image-rendering:auto}
+.iconrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#iconPrev{width:56px;height:56px;border-radius:8px;background:var(--code);border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;overflow:hidden}
+#iconPrev img{max-width:100%;max-height:100%}
+#emojiPick{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:4px;margin-top:8px;max-height:190px;overflow:auto;padding:6px;background:var(--code);border-radius:8px}
+#emojiPick button{font-size:22px;padding:2px;line-height:1.3;background:var(--panel)}
+.banner{padding:10px 14px;border-radius:8px;background:color-mix(in srgb,var(--danger) 14%,transparent);margin:0 20px 0;max-width:1160px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎛️ DeckPad Editor</h1>
+  <button id="btnConnect" class="primary">Mit DeckPad verbinden</button>
+  <button id="btnAllPorts" title="zeigt auch andere COM-Ports, z. B. den UART-Port">Alle Ports anzeigen</button>
+  <button id="btnDemo">Demo ohne Gerät</button>
+  <span id="status" class="pill">nicht verbunden</span>
+  <button id="btnDisc" class="hidden" title="gibt den COM-Port frei (nötig, wenn der Auto-Profilwechsel-Helfer ihn nutzen soll)">Trennen</button>
+  <span style="flex:1"></span>
+  <button id="btnPing" disabled>Ping</button>
+  <button id="btnStatus" disabled>Status</button>
+  <button id="btnLog" disabled>Geräte-Log</button>
+  <button id="btnTime" disabled>Uhrzeit setzen</button>
+  <button id="btnPanel" disabled title="startet die Display-Ansteuerung neu (hilft, wenn das Bild nach einem Speichern verschoben oder gestreift bleibt)">Panel neu starten</button>
+  <button id="btnRedraw" disabled title="zeichnet das ganze Display neu (hilft gegen Bildstreifen, falls der Bildinhalt gestört ist)">Display neu zeichnen</button>
+</header>
+<div id="noSerial" class="banner hidden">Dieser Browser unterstützt kein Web Serial. Bitte <b>Chrome</b> oder <b>Edge</b> unter Windows verwenden (oder den Demo-Modus zum Ausprobieren).</div>
+
+<main>
+  <section>
+    <h2>Profile</h2>
+    <div id="profiles"></div>
+    <div class="row">
+      <button id="btnNew">Neu</button>
+      <button id="btnDup" disabled>Kopie</button>
+      <button id="btnDel" class="danger" disabled>Löschen</button>
+    </div>
+    <p class="hint">Das aktive Profil auf dem Gerät hat das Zeichen „aktiv“.</p>
+    <h2 style="margin-top:18px">Schnellwahl am Gerät</h2>
+    <p class="hint" style="margin-top:0">Die Tasten <b>P1–P5</b> unter dem Kachelfeld springen auf das hier gewählte Profil, auf jeder Profilseite. Die Taste <b>Standard</b> springt immer auf das Profil „standard“.</p>
+    <div class="row" style="align-items:center"><label for="qSel0" style="margin:0;width:2.2em">P1</label><select id="qSel0" data-q="0" style="flex:1"></select></div>
+    <div class="row" style="align-items:center"><label for="qSel1" style="margin:0;width:2.2em">P2</label><select id="qSel1" data-q="1" style="flex:1"></select></div>
+    <div class="row" style="align-items:center"><label for="qSel2" style="margin:0;width:2.2em">P3</label><select id="qSel2" data-q="2" style="flex:1"></select></div>
+    <div class="row" style="align-items:center"><label for="qSel3" style="margin:0;width:2.2em">P4</label><select id="qSel3" data-q="3" style="flex:1"></select></div>
+    <div class="row" style="align-items:center"><label for="qSel4" style="margin:0;width:2.2em">P5</label><select id="qSel4" data-q="4" style="flex:1"></select></div>
+    <div class="row" style="margin-top:12px">
+      <button id="btnExport" disabled>Als Datei sichern</button>
+      <button id="btnImport">Datei laden</button>
+      <input id="fileImport" type="file" accept=".json,application/json" class="hidden">
+    </div>
+  </section>
+
+  <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+    <section id="editor" class="hidden">
+      <h2>Profil</h2>
+      <div class="grid3">
+        <div><label for="pName">Name</label><input id="pName" maxlength="31"></div>
+        <div><label for="pExe">Programm (für späteren Auto-Wechsel)</label><input id="pExe" placeholder="z. B. bambu-studio.exe" maxlength="47"></div>
+        <div><label for="pId">ID (Dateiname)</label><input id="pId" maxlength="23"></div>
+      </div>
+      <div class="grid2">
+        <div><label for="pCols">Spalten (1–6)</label><input id="pCols" type="number" min="1" max="6"></div>
+        <div><label for="pRows">Zeilen (1–4)</label><input id="pRows" type="number" min="1" max="4"></div>
+      </div>
+      <p class="hint">Design (hell/dunkel) und Helligkeit stellst du am Gerät ein, sie gelten für alle Profile.</p>
+
+      <h2 style="margin-top:18px">Tasten – anklicken zum Bearbeiten, ziehen zum Verschieben</h2>
+      <p class="hint" style="margin-top:0">Kacheln lassen sich frei im Raster platzieren: auf einen leeren Platz ziehen verschiebt, auf eine belegte Kachel ziehen tauscht beide. Leere Plätze bleiben leer.</p>
+      <div id="deck"></div>
+
+      <div id="tileEd" class="hidden">
+        <div class="grid2">
+          <div>
+            <label for="tLabel">Beschriftung (Zeilenumbruch erlaubt)</label>
+            <textarea id="tLabel" rows="2" maxlength="27"></textarea>
+            <label for="tPreset">Schnellauswahl</label>
+            <select id="tPreset"></select>
+            <label>Icon (optional)</label>
+            <div class="iconrow">
+              <div id="iconPrev">kein Icon</div>
+              <button id="btnEmoji">Symbol wählen</button>
+              <button id="btnImg">Bild laden …</button>
+              <button id="btnIconDel" class="danger">Entfernen</button>
+              <select id="iconSize" style="width:auto" title="Größe auf dem Gerät"><option value="32">32 px</option><option value="48" selected>48 px</option><option value="64">64 px</option><option value="80">80 px</option></select>
+            </div>
+            <input id="iconFile" type="file" accept="image/*" class="hidden">
+            <div id="emojiPick" class="hidden"></div>
+            <p class="hint">Mit Icon und Text bitte 48 px oder kleiner, nur Icon darf größer sein.</p>
+          </div>
+          <div>
+            <label>Farbe</label>
+            <div class="row"><input id="tColor" type="color" style="width:64px;height:36px;padding:2px"><span class="hint" id="tColorHex"></span></div>
+            <div class="swatches" id="swatches"></div>
+          </div>
+        </div>
+        <label for="tType">Aktion</label>
+        <select id="tType">
+          <option value="none">Keine (nur Farbwechsel)</option>
+          <option value="media">Medien / Lautstärke</option>
+          <option value="keys">Tastenkombination</option>
+          <option value="run">Programm, Datei oder Link starten</option>
+          <option value="text">Text tippen</option>
+          <option value="host">Nachricht an PC-Programm (für später)</option>
+        </select>
+        <div id="aMedia" class="hidden"><label for="tMedia">Taste</label><select id="tMedia"></select></div>
+        <div id="aKeys" class="hidden">
+          <label>Modifier</label>
+          <div class="chips" id="kMods"></div>
+          <label for="kKey">Taste – hier klicken und die Taste drücken, oder aus der Liste wählen</label>
+          <div class="grid2"><input id="kKey" placeholder="Taste drücken …" readonly><select id="kList"></select></div>
+          <p class="hint">Ergebnis: <b id="kResult"></b>. Die Win-Taste lässt sich im Browser nicht aufnehmen, dafür gibt es das Kästchen.</p>
+        </div>
+        <div id="aRun" class="hidden">
+          <label for="tRun">Was soll starten?</label>
+          <input id="tRun" maxlength="95" placeholder="notepad  |  calc  |  https://example.com  |  C:\Pfad\programm.exe">
+          <p class="hint">Das Gerät drückt Win+R, tippt den Text und bestätigt mit Enter – es gilt alles, was der Windows-Dialog „Ausführen“ versteht (Programmname, vollständiger Pfad, Ordner, Internetadresse).</p>
+        </div>
+        <div id="aText" class="hidden"><label for="tText">Text</label><input id="tText" maxlength="95"></div>
+        <div id="aHost" class="hidden"><label for="tHost">Nachricht</label><input id="tHost" maxlength="95"><p class="hint">Wird als „ACTION …“ über den COM-Port gesendet.</p></div>
+        <div class="row" style="margin-top:12px"><button id="btnTileClear" class="danger">Kachel entfernen</button></div>
+      </div>
+
+      <div class="row" style="margin-top:18px">
+        <button id="btnSave" class="primary">Auf DeckPad speichern</button>
+        <button id="btnUse">Auf dem Gerät aktivieren</button>
+        <span id="saveInfo" class="hint"></span>
+      </div>
+    </section>
+
+    <section><h2>Verlauf</h2><div id="console"></div></section>
+  </div>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const MEDIA = [["vol_up","Lauter"],["vol_down","Leiser"],["mute","Stumm"],["play_pause","Play / Pause"],["next","Nächster Titel"],
+               ["prev","Vorheriger Titel"],["stop","Stop"],["calculator","Windows-Rechner"],["browser","Browser"],["mail","E-Mail-Programm"]];
+const COLORS = ["#27ae60","#16a085","#2980b9","#8e44ad","#c0392b","#d35400","#f39c12","#2c3e50","#7f8c8d","#e84393","#00b8d9","#34495e"];
+const MODS = [["ctrl","Strg"],["shift","Shift"],["alt","Alt"],["win","Win"],["altgr","AltGr"]];
+const KEYLIST = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",
+  "0","1","2","3","4","5","6","7","8","9","f1","f2","f3","f4","f5","f6","f7","f8","f9","f10","f11","f12",
+  "enter","esc","tab","space","backspace","delete","insert","home","end","pageup","pagedown","up","down","left","right","printscreen","pause","capslock"];
+const PRESETS = [
+  ["","– Vorlage wählen –"],
+  ["Lauter|#27ae60|media|vol_up|🔊","Lauter"],["Leiser|#2980b9|media|vol_down|🔉","Leiser"],["Stumm|#c0392b|media|mute|🔇","Stumm"],
+  ["Play\nPause|#d35400|media|play_pause|⏯️","Play / Pause"],["Weiter|#16a085|media|next|⏭️","Nächster Titel"],["Zurück|#16a085|media|prev|⏮️","Vorheriger Titel"],
+  ["Kopieren|#2980b9|keys|ctrl+c|📋","Kopieren (Strg+C)"],["Einfügen|#2980b9|keys|ctrl+v|📌","Einfügen (Strg+V)"],["Rückgängig|#8e44ad|keys|ctrl+z|↩️","Rückgängig (Strg+Z)"],
+  ["Speichern|#27ae60|keys|ctrl+s|💾","Speichern (Strg+S)"],["Mikrofon|#8e44ad|keys|ctrl+shift+m|🎤","Mikrofon (Strg+Shift+M)"],
+  ["Screenshot|#d35400|keys|win+shift+s|📷","Bildschirmausschnitt (Win+Shift+S)"],["Desktop|#34495e|keys|win+d|🖥️","Desktop anzeigen (Win+D)"],
+  ["Task-\nmanager|#7f8c8d|keys|ctrl+shift+esc","Task-Manager"],
+  ["Rechner|#16a085|run|calc|🧮","Programm: Rechner"],["Editor|#2c3e50|run|notepad|📝","Programm: Editor"],["Explorer|#f39c12|run|explorer|📁","Programm: Explorer"],
+  ["Browser|#2980b9|run|https://www.google.com|🌐","Link: Browser mit Startseite"]
+];
+
+/* ───────── Transport: Web Serial oder Demo ───────── */
+class SerialTransport {
+  constructor(){ this.port=null; this.writer=null; this.buf=""; this.q=[]; this.cur=null; this.onLine=null; }
+  async open(showAll){
+    // Nur Espressif-Geräte (VID 0x303A) anzeigen: das ist der native USB-Port des DeckPad.
+    // Der UART-Port (CH343, VID 0x1A86) antwortet nie auf Befehle und würde sonst zur Auswahl stehen.
+    this.port = await navigator.serial.requestPort(showAll ? {} : {filters:[{usbVendorId:0x303A}]});
+    this.info = this.port.getInfo ? this.port.getInfo() : {};
+    await this.port.open({baudRate:115200});
+    try{ await this.port.setSignals({dataTerminalReady:true, requestToSend:true}); }catch(e){}   // das Gerät sendet erst, wenn DTR anliegt
+    this.writer = this.port.writable.getWriter();
+    this.reading = true; this.readLoop();
+    this.port.addEventListener("disconnect", () => { this.reading=false; if(this.onClose) this.onClose(); });
+  }
+  async readLoop(){
+    const dec = new TextDecoder();
+    while(this.reading && this.port.readable){
+      const reader = this.port.readable.getReader();
+      try{
+        while(true){
+          const {value, done} = await reader.read();
+          if(done) break;
+          this.buf += dec.decode(value, {stream:true});
+          let i; while((i = this.buf.search(/\r?\n/)) >= 0){
+            const line = this.buf.slice(0,i); this.buf = this.buf.slice(this.buf.indexOf("\n", i)+1);
+            this.dispatch(line);
+          }
+        }
+      }catch(e){ if(this.onClose) this.onClose(); }
+      finally{ reader.releaseLock(); }
+      break;
+    }
+  }
+  dispatch(line){
+    const c = this.cur;
+    if(c && !line.startsWith("ACTION ")){
+      if(c.multi){ c.lines.push(line); if(line===c.multi){ clearTimeout(c.t); this.cur=null; c.res(c.lines); this.next(); } }
+      else { clearTimeout(c.t); this.cur=null; c.res([line]); this.next(); }
+    } else if(this.onLine) this.onLine(line);
+  }
+  send(line, multi){
+    return new Promise((res,rej)=>{ this.q.push({line,multi,res,rej,lines:[]}); this.next(); });
+  }
+  next(){
+    if(this.cur || !this.q.length) return;
+    const c = this.cur = this.q.shift();
+    c.t = setTimeout(()=>{ this.cur=null; c.rej(new Error("Keine Antwort vom Gerät")); this.next(); }, c.multi?8000:4000);
+    this.writeLine(c.line).catch(e=>{ clearTimeout(c.t); this.cur=null; c.rej(e); this.next(); });
+  }
+  async writeLine(s){
+    const data = new TextEncoder().encode(s+"\n");
+    for(let i=0;i<data.length;i+=256) await this.writer.write(data.slice(i,i+256));
+  }
+  async close(){
+    this.reading=false;
+    try{ this.writer && this.writer.releaseLock(); }catch(e){}
+    try{ await this.port.close(); }catch(e){}
+  }
+}
+
+class DemoTransport {   // Verhält sich wie das Gerät, nur im Speicher
+  constructor(){
+    this.p = {
+      standard:{name:"Standard",exe:"",cols:5,rows:3,settings:{theme:"light",brightness:80},tiles:[
+        {label:"Lauter",color:"#27ae60",type:"media",spec:"vol_up"},{label:"Leiser",color:"#2980b9",type:"media",spec:"vol_down"},
+        {label:"Strg+Shift+M",color:"#8e44ad",type:"keys",spec:"ctrl+shift+m"},{label:"Stumm",color:"#c0392b",type:"media",spec:"mute"}]},
+      bambu:{name:"Bambu Studio",exe:"bambu-studio.exe",cols:5,rows:3,settings:{theme:"dark",brightness:70},tiles:[
+        {label:"Speichern",color:"#27ae60",type:"keys",spec:"ctrl+s"},{label:"Editor",color:"#2c3e50",type:"run",spec:"notepad"}]}};
+    this.active="standard"; this.icons={}; this.up=null; this.quick=["","","","",""];
+  }
+  async open(){} async close(){}
+  async send(line, multi){
+    await new Promise(r=>setTimeout(r,60));
+    const sp=line.indexOf(" "), cmd=(sp<0?line:line.slice(0,sp)).toUpperCase(), a=sp<0?"":line.slice(sp+1);
+    if(cmd==="PING") return ["PONG"];
+    if(cmd==="VER") return ["DECKPAD demo"];
+    if(cmd==="STATUS") return ["v=demo up=1s usb=1 flush_n=0"];
+    if(cmd==="LOG") return ["--- LOG Anfang ---","       1 [Demo] kein echtes Gerät","--- LOG Ende ---"];
+    if(cmd==="TIME"||cmd==="REDRAW"||cmd==="PANEL") return ["OK"];
+    if(cmd==="ICONBEGIN"){ const [id,w,h]=a.split(" "); this.up={id,w:+w,h:+h,b64:""}; return ["OK"]; }
+    if(cmd==="ICONDATA"){ if(!this.up) return ["ERR kein ICONBEGIN"]; this.up.b64+=a; return ["OK"]; }
+    if(cmd==="ICONEND"){ if(!this.up) return ["ERR kein ICONBEGIN"]; const u=this.up; this.up=null;
+      if(atob(u.b64).length!==u.w*u.h*3) return ["ERR unvollstaendig"]; this.icons[u.id]=u; return ["OK"]; }
+    if(cmd==="ICONLIST") return [JSON.stringify({icons:Object.values(this.icons).map(i=>({id:i.id,w:i.w,h:i.h}))})];
+    if(cmd==="ICONGET") return this.icons[a] ? ["ICON "+this.icons[a].w+" "+this.icons[a].h+" "+this.icons[a].b64] : ["ERR unbekannt"];
+    if(cmd==="ICONDEL"){ delete this.icons[a]; return ["OK"]; }
+    if(cmd==="QUICK"){ const q=a.split(" "); if(q.length!==5) return ["ERR Format: QUICK <id1> <id2> <id3> <id4> <id5> (- = frei)"]; this.quick=q.map(x=>x==="-"?"":x); return ["OK"]; }
+    if(cmd==="LIST") return [JSON.stringify({active:this.active,quick:this.quick.map(x=>this.p[x]?x:""),profiles:Object.entries(this.p).map(([id,v])=>({id,name:v.name,exe:v.exe}))})];
+    if(cmd==="GET") return this.p[a] ? [JSON.stringify(Object.assign({v:1},this.p[a]))] : ["ERR unbekannt"];
+    if(cmd==="PUT"){ const i=a.indexOf(" "); try{ this.p[a.slice(0,i)]=JSON.parse(a.slice(i+1)); return ["OK"]; }catch(e){ return ["ERR JSON fehlerhaft"]; } }
+    if(cmd==="DEL"){ if(Object.keys(this.p).length<2||!this.p[a]) return ["ERR nicht geloescht"]; delete this.p[a]; if(this.active===a) this.active=Object.keys(this.p)[0]; return ["OK"]; }
+    if(cmd==="USE"){ if(!this.p[a]) return ["ERR unbekannt"]; this.active=a; return ["OK"]; }
+    return [];
+  }
+}
+
+/* ───────── Zustand ───────── */
+let T = null;                       // aktueller Transport
+const S = { list:[], active:"", id:"", isNew:false, cur:null, sel:-1 };
+
+function log(txt, cls){
+  const d=document.createElement("div"); if(cls) d.className=cls;
+  d.textContent = txt.length>300 ? txt.slice(0,300)+" …" : txt;
+  $("console").appendChild(d); $("console").scrollTop = $("console").scrollHeight;
+}
+async function cmd(line, multi){
+  log("→ "+line, "out");
+  const r = await T.send(line, multi);
+  r.forEach(l=>log("← "+l));
+  return r;
+}
+function setStatus(txt, on){ const s=$("status"); s.textContent=txt; s.classList.toggle("on",!!on); }
+function enableTools(on){ ["btnPing","btnStatus","btnLog","btnTime","btnRedraw","btnPanel"].forEach(i=>$(i).disabled=!on); $("btnDisc").classList.toggle("hidden",!on); }
+
+/* ───────── Verbinden ───────── */
+function hex(v){ return v===undefined ? "?" : "0x"+v.toString(16).toUpperCase().padStart(4,"0"); }
+function diagnose(info){
+  if(!info || info.usbVendorId===undefined) return "";
+  if(info.usbVendorId===0x1A86) return "Das ist der UART-Port des Boards (CH343, nur zum Flashen und für Debug-Ausgaben). Bitte das USB-Kabel in die andere USB-C-Buchse (beschriftet „USB“) stecken und diese Verbindung wählen.";
+  if(info.usbVendorId===0x303A) return "Das ist der richtige Port (Espressif), aber das Gerät antwortet nicht. Mögliche Ursachen: alte Firmware ohne Editor-Befehle (v0.2.0 nötig), das Gerät hängt, oder ein anderes Programm (Terminal, Arduino-Monitor) hat den Port offen. Gerät neu starten und es nochmal versuchen.";
+  return "Unbekanntes USB-Gerät (VID "+hex(info.usbVendorId)+"). Falls es nicht das DeckPad ist, einen anderen Port wählen.";
+}
+async function start(transport, label, showAll){
+  T = transport;
+  T.onLine = l => log("← "+l);
+  T.onClose = () => { setStatus("Verbindung getrennt", false); enableTools(false); };
+  try{
+    await T.open(showAll);
+    if(T.info) log("Port: VID "+hex(T.info.usbVendorId)+" PID "+hex(T.info.usbProductId));
+    const r = await cmd("PING"); if(r[0]!=="PONG") throw new Error("Unerwartete Antwort: "+r[0]);
+    setStatus(label, true); enableTools(true);
+    await cmd("TIME "+Math.floor(Date.now()/1000));       // Uhrzeit des PCs ans Gerät
+    await refreshList();
+    if(S.active) await selectProfile(S.active);
+  }catch(e){
+    setStatus("Fehler", false); log("Fehler: "+e.message, "err");
+    if(T.info){ const d=diagnose(T.info); if(d) log("Hinweis: "+d, "err"); }
+    else if(e.name==="NotFoundError") log("Hinweis: Kein passender Port ausgewählt. Wird kein Gerät angezeigt, ist das DeckPad nicht über die USB-Buchse (nativ) verbunden. „Alle Ports anzeigen“ zeigt auch andere Anschlüsse.", "err");
+    if(T.close) try{ await T.close(); }catch(_){}      // Port wieder freigeben, sonst scheitert der nächste Versuch
+  }
+}
+$("btnConnect").onclick = () => start(new SerialTransport(), "verbunden", false);
+$("btnAllPorts").onclick = () => start(new SerialTransport(), "verbunden", true);
+$("btnDemo").onclick = () => start(new DemoTransport(), "Demo-Modus");
+
+$("btnDisc").onclick = async () => {
+  try{ if(T && T.close) await T.close(); }catch(_){}
+  T = null; S.cur=null; $("editor").classList.add("hidden"); S.list=[]; renderList();
+  setStatus("getrennt – Port frei", false); enableTools(false); log("Verbindung getrennt; der COM-Port ist wieder frei.");
+};
+
+/* ───────── Profilliste ───────── */
+async function refreshList(){
+  const r = await cmd("LIST");
+  const d = JSON.parse(r[0]);
+  S.list = d.profiles; S.active = d.active; S.quick = d.quick || ["","","","",""]; renderList();
+}
+/* Schnellwahl P1..P5: Auswahlfelder fuellen; eine Aenderung geht sofort ans Geraet */
+function renderQuick(){
+  document.querySelectorAll("select[data-q]").forEach(sel=>{
+    const n=+sel.dataset.q, cur=(S.quick&&S.quick[n])||"";
+    sel.innerHTML=""; sel.add(new Option("– nicht belegt –",""));
+    S.list.forEach(p=>sel.add(new Option(p.name+" ("+p.id+")",p.id)));
+    sel.value=S.list.some(p=>p.id===cur)?cur:"";
+    sel.disabled=!T || !S.list.length;
+  });
+}
+document.querySelectorAll("select[data-q]").forEach(sel=>sel.onchange=async()=>{
+  const q=[0,1,2,3,4].map(n=>document.getElementById("qSel"+n).value||"-");
+  try{
+    const r=await cmd("QUICK "+q.join(" "));
+    if(r[0].startsWith("ERR")) throw new Error(r[0]);
+    S.quick=q.map(x=>x==="-"?"":x); log("Schnellwahl P1–P5 gesetzt.");
+  }catch(e){ log("Fehler: "+e.message,"err"); refreshList(); }
+});
+function renderList(){
+  const box = $("profiles"); box.innerHTML = "";
+  S.list.forEach(p=>{
+    const d=document.createElement("div"); d.className="prof"+(p.id===S.id&&!S.isNew?" sel":"");
+    const n=document.createElement("b"); n.textContent=p.name; d.appendChild(n);
+    if(p.id===S.active){ const b=document.createElement("span"); b.className="badge"; b.textContent="aktiv"; d.appendChild(b); }
+    const sm=document.createElement("small"); sm.textContent=p.id+(p.exe?" · "+p.exe:""); d.appendChild(sm);
+    d.onclick=()=>selectProfile(p.id);
+    box.appendChild(d);
+  });
+  $("btnDup").disabled = $("btnDel").disabled = $("btnExport").disabled = !S.cur;
+  renderQuick();
+}
+async function selectProfile(id){
+  try{
+    const r = await cmd("GET "+id);
+    if(r[0].startsWith("ERR")) throw new Error(r[0]);
+    load(id, JSON.parse(r[0]), false);
+  }catch(e){ log("Fehler: "+e.message,"err"); }
+}
+function normalize(p){
+  p.name = p.name||"Neu"; p.exe = p.exe||"";
+  p.cols = clamp(p.cols||5,1,6); p.rows = clamp(p.rows||3,1,4);
+  delete p.settings;                       // Design und Helligkeit gelten am Geraet fuer alle Profile, nicht mehr im Profil
+  const cap=p.cols*p.rows, used=new Set();
+  p.tiles = (p.tiles||[]).map((t,i)=>({slot:Number.isInteger(t.slot)?t.slot:i,label:t.label||"",color:t.color||"#34495e",type:t.type||"none",spec:t.spec||"",icon:t.icon||""}))
+    .filter(t=>t.slot>=0 && t.slot<cap && !used.has(t.slot) && used.add(t.slot));   // Platz im Raster muss gueltig und einmalig sein
+  p.v = 1; return p;
+}
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,Number(v)||a));
+function load(id, p, isNew){
+  S.id=id; S.isNew=isNew; S.cur=normalize(p); S.sel=-1;
+  $("editor").classList.remove("hidden"); fillProfile(); renderDeck(); renderTile(); renderList();
+  $("saveInfo").textContent = isNew ? "Neu – noch nicht auf dem Gerät." : "";
+}
+function slug(s){ return (s||"profil").toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss")
+  .replace(/[^a-z0-9_-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,23) || "profil"; }
+function uniqueId(base){ let id=base, n=2; const ids=new Set(S.list.map(p=>p.id)); while(ids.has(id)) id=base.slice(0,20)+"-"+(n++); return id; }
+
+$("btnNew").onclick = () => {
+  const name = prompt("Name des neuen Profils (z. B. Programm):","Neues Profil"); if(!name) return;
+  load(uniqueId(slug(name)), {name, tiles:[]}, true);
+};
+$("btnDup").onclick = () => {
+  const p = JSON.parse(JSON.stringify(S.cur)); p.name = (p.name+" Kopie").slice(0,31);
+  load(uniqueId(slug(p.name)), p, true);
+};
+$("btnDel").onclick = async () => {
+  if(S.isNew){ S.cur=null; $("editor").classList.add("hidden"); renderList(); return; }
+  if(!confirm("Profil „"+S.cur.name+"“ vom Gerät löschen?")) return;
+  const r = await cmd("DEL "+S.id);
+  if(r[0]!=="OK") { alert("Nicht gelöscht: "+r[0]); return; }
+  S.cur=null; $("editor").classList.add("hidden"); await refreshList();
+  if(S.active) selectProfile(S.active);
+};
+$("btnExport").onclick = () => {
+  const blob = new Blob([JSON.stringify(S.cur,null,2)], {type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=S.id+".json"; a.click(); URL.revokeObjectURL(a.href);
+};
+$("btnImport").onclick = () => $("fileImport").click();
+$("fileImport").onchange = async e => {
+  const f=e.target.files[0]; if(!f) return;
+  try{ const p=JSON.parse(await f.text()); load(uniqueId(slug(f.name.replace(/\.json$/i,"")||p.name)), p, true); }
+  catch(err){ alert("Keine gültige Profil-Datei: "+err.message); }
+  e.target.value="";
+};
+
+/* ───────── Profil-Felder ───────── */
+function fillProfile(){
+  const p=S.cur;
+  $("pName").value=p.name; $("pExe").value=p.exe; $("pId").value=S.id; $("pId").disabled=!S.isNew;
+  $("pCols").value=p.cols; $("pRows").value=p.rows;
+}
+$("pName").oninput = e => { S.cur.name=e.target.value; if(S.isNew){ S.id=uniqueId(slug(e.target.value)); $("pId").value=S.id; } };
+$("pExe").oninput = e => S.cur.exe=e.target.value.trim();
+$("pId").oninput = e => { S.id = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g,""); e.target.value=S.id; };
+// Rastergroesse aendern: Kacheln behalten ihre Zeile/Spalte (nicht ihre Nummer); was nicht mehr hineinpasst, faellt weg
+function resizeGrid(newCols,newRows){
+  const p=S.cur, oc=p.cols, keep=[]; let dropped=0;
+  p.tiles.forEach(t=>{ const r=Math.floor(t.slot/oc), c=t.slot%oc; if(c<newCols && r<newRows){ keep.push(Object.assign(t,{slot:r*newCols+c})); } else dropped++; });
+  if(dropped && !confirm(dropped+" Kachel(n) liegen außerhalb des neuen Rasters und werden entfernt. Fortfahren?")) return false;
+  p.tiles=keep; p.cols=newCols; p.rows=newRows; S.sel=-1; return true;
+}
+function onGrid(){
+  const nc=clamp($("pCols").value,1,6), nr=clamp($("pRows").value,1,4);
+  if(!resizeGrid(nc,nr)){ $("pCols").value=S.cur.cols; $("pRows").value=S.cur.rows; return; }
+  $("pCols").value=nc; $("pRows").value=nr; renderDeck(); renderTile();
+}
+$("pCols").onchange = onGrid; $("pRows").onchange = onGrid;
+
+/* ───────── Raster ───────── */
+const tileAt = slot => S.cur.tiles.find(t=>t.slot===slot);
+function moveTile(from,to){
+  if(from===to || from==null) return;
+  const a=tileAt(from), b=tileAt(to);
+  if(!a) return;
+  if(b) b.slot=from;                       // belegt: tauschen
+  a.slot=to;
+  S.sel=to; renderDeck(); renderTile();
+}
+function renderDeck(){
+  const p=S.cur, d=$("deck"); d.innerHTML="";
+  d.style.gridTemplateColumns = `repeat(${p.cols},minmax(0,1fr))`;
+  for(let i=0;i<p.cols*p.rows;i++){
+    const t=tileAt(i), b=document.createElement("button"); b.className="tile";
+    if(t){
+      b.style.background=t.color;
+      const ic=t.icon?ICONS[t.icon]:null;
+      if(t.icon && !ic) ensureIcon(t.icon);
+      if(ic){ const im=document.createElement("img"); im.src=ic.url; im.width=Math.min(ic.w,56); im.height=Math.min(ic.h,56); im.draggable=false; b.appendChild(im); }
+      if(t.label || !ic) b.appendChild(document.createTextNode(t.label||(ic?"":"(ohne Text)")));
+      b.draggable=true;
+      b.ondragstart=e=>{ S.drag=i; e.dataTransfer.effectAllowed="move"; e.dataTransfer.setData("text/plain",String(i)); };
+    } else { b.classList.add("empty"); b.textContent="+"; }
+    if(i===S.sel) b.classList.add("sel");
+    b.ondragover=e=>{ e.preventDefault(); e.dataTransfer.dropEffect="move"; b.classList.add("over"); };
+    b.ondragleave=()=>b.classList.remove("over");
+    b.ondrop=e=>{ e.preventDefault(); b.classList.remove("over"); const f=S.drag; S.drag=null; moveTile(f,i); };
+    b.ondragend=()=>{ S.drag=null; };
+    b.onclick=()=>{ S.sel=i; if(!tileAt(i)) p.tiles.push({slot:i,label:"",color:"#34495e",type:"none",spec:"",icon:""}); renderDeck(); renderTile(); };
+    d.appendChild(b);
+  }
+}
+
+/* ───────── Kachel bearbeiten ───────── */
+function fillSelect(sel, opts){ sel.innerHTML=""; opts.forEach(([v,t])=>{ const o=document.createElement("option"); o.value=v; o.textContent=t; sel.appendChild(o); }); }
+fillSelect($("tMedia"), MEDIA); fillSelect($("tPreset"), PRESETS); fillSelect($("kList"), [["","– Liste –"]].concat(KEYLIST.map(k=>[k,k])));
+COLORS.forEach(c=>{ const b=document.createElement("button"); b.className="sw"; b.style.background=c; b.title=c; b.onclick=()=>setColor(c); $("swatches").appendChild(b); });
+MODS.forEach(([v,t])=>{ const l=document.createElement("label"); const c=document.createElement("input"); c.type="checkbox"; c.value=v; c.onchange=keysChanged; l.appendChild(c); l.append(t); $("kMods").appendChild(l); });
+
+const tile = () => S.cur && S.sel>=0 ? tileAt(S.sel) : null;
+function renderTile(){
+  const t=tile(); $("tileEd").classList.toggle("hidden", !t); if(!t) return;
+  $("tLabel").value=t.label; showIconPrev(); $("tColor").value=t.color; $("tColorHex").textContent=t.color; $("tType").value=t.type; $("tPreset").value="";
+  showAction(t.type);
+  if(t.type==="media") $("tMedia").value=t.spec;
+  if(t.type==="run") $("tRun").value=t.spec;
+  if(t.type==="text") $("tText").value=t.spec;
+  if(t.type==="host") $("tHost").value=t.spec;
+  if(t.type==="keys") parseKeys(t.spec);
+}
+function showAction(type){ ["media","keys","run","text","host"].forEach(a=>$("a"+a[0].toUpperCase()+a.slice(1)).classList.toggle("hidden", a!==type)); }
+function setColor(c){ const t=tile(); if(!t) return; t.color=c; $("tColor").value=c; $("tColorHex").textContent=c; renderDeck(); }
+$("tColor").oninput = e => setColor(e.target.value);
+$("tLabel").oninput = e => { const t=tile(); t.label=e.target.value; renderDeck(); };
+$("tType").onchange = e => {
+  const t=tile(); t.type=e.target.value; showAction(t.type);
+  t.spec = t.type==="media" ? MEDIA[0][0] : "";
+  if(t.type==="media"){ $("tMedia").value=t.spec; }
+  if(t.type==="keys"){ parseKeys(""); }
+  ["tRun","tText","tHost"].forEach(i=>$(i).value="");
+};
+$("tMedia").onchange = e => tile().spec=e.target.value;
+$("tRun").oninput = e => tile().spec=e.target.value;
+$("tText").oninput = e => tile().spec=e.target.value;
+$("tHost").oninput = e => tile().spec=e.target.value;
+$("tPreset").onchange = e => {
+  const v=e.target.value; if(!v) return; const [label,color,type,spec,emoji]=v.split("|"); const t=tile();
+  Object.assign(t,{label,color,type,spec,icon:""});
+  if(emoji) setIcon(makeEmojiIcon(emoji, +$("iconSize").value));
+  renderTile(); renderDeck();
+};
+$("btnTileClear").onclick = () => {
+  S.cur.tiles=S.cur.tiles.filter(t=>t.slot!==S.sel); S.sel=-1; renderDeck(); renderTile();
+};
+
+/* Tastenkombination: Modifier-Kästchen + eine Taste */
+function keysSpec(){
+  const mods=[...document.querySelectorAll("#kMods input:checked")].map(c=>c.value);
+  const k=$("kKey").value;
+  return k ? mods.concat(k).join("+") : "";
+}
+function keysChanged(){ const s=keysSpec(); tile().spec=s; $("kResult").textContent=s||"(unvollständig)"; }
+function parseKeys(spec){
+  const parts=spec?spec.split("+"):[]; const key=parts.length?parts[parts.length-1]:"";
+  document.querySelectorAll("#kMods input").forEach(c=>c.checked=parts.slice(0,-1).includes(c.value));
+  $("kKey").value=key; $("kList").value=KEYLIST.includes(key)?key:""; $("kResult").textContent=spec||"(unvollständig)";
+}
+const CODE = {Enter:"enter",NumpadEnter:"enter",Escape:"esc",Tab:"tab",Space:"space",Backspace:"backspace",Delete:"delete",Insert:"insert",Home:"home",End:"end",
+  PageUp:"pageup",PageDown:"pagedown",ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right",PrintScreen:"printscreen",Pause:"pause",CapsLock:"capslock"};
+function codeToKey(code){
+  if(/^Key[A-Z]$/.test(code)) return code.slice(3).toLowerCase();
+  if(/^Digit[0-9]$/.test(code)) return code.slice(5);
+  if(/^F([1-9]|1[0-2])$/.test(code)) return code.toLowerCase();
+  return CODE[code]||"";
+}
+$("kKey").addEventListener("keydown", e => {
+  e.preventDefault(); const k=codeToKey(e.code); if(!k) return;
+  $("kKey").value=k; $("kList").value=KEYLIST.includes(k)?k:""; keysChanged();
+});
+$("kList").onchange = e => { $("kKey").value=e.target.value; keysChanged(); };
+
+/* ───────── Icons ───────── */
+const ICONS = {};          // id -> {w,h,raw(Uint8Array,RGB565+A),b64,url,onDevice}
+const ICON_PENDING = new Set();
+const EMOJIS = "🔊 🔉 🔇 🎵 🎧 🎤 ⏯️ ⏭️ ⏮️ ⏹️ ⏺️ 🎬 📺 📷 🎮 🖥️ 💻 ⌨️ 🖱️ 🖨️ 📁 📂 💾 📝 📋 📌 ✂️ 🗑️ ↩️ ↪️ 🔍 🏠 ⚙️ 🔒 🔓 🔑 🌐 📧 💬 📞 🔔 ⏰ ⏱️ ⏳ 🧮 📊 📈 🧰 🔧 🔨 🛠️ 💡 🔥 ⭐ ❤️ ✅ ❌ ➕ ➖ ⚡ 🌙 ☀️ 🚀 🎨 🖌️ 📐 🧩 ▶️ ⏸️ 🔴 🟢 🔵 🟡 ⬆️ ⬇️ ⬅️ ➡️".split(" ");
+function toB64(u8){ let s=""; for(let i=0;i<u8.length;i+=8192) s+=String.fromCharCode.apply(null,u8.subarray(i,i+8192)); return btoa(s); }
+function fromB64(b){ const s=atob(b), u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return u; }
+function canvasToRaw(cv){            // RGBA -> RGB565 (low, high) + Alpha, wie LVGL "TRUE_COLOR_ALPHA"
+  const w=cv.width,h=cv.height, d=cv.getContext("2d").getImageData(0,0,w,h).data, raw=new Uint8Array(w*h*3);
+  for(let i=0,o=0;i<w*h;i++,o+=3){ const v=((d[i*4]>>3)<<11)|((d[i*4+1]>>2)<<5)|(d[i*4+2]>>3); raw[o]=v&255; raw[o+1]=v>>8; raw[o+2]=d[i*4+3]; }
+  return raw;
+}
+function rawToUrl(raw,w,h){          // Gegenrichtung: Vorschau aus den Gerätedaten
+  const cv=document.createElement("canvas"); cv.width=w; cv.height=h; const c=cv.getContext("2d"), im=c.createImageData(w,h);
+  for(let i=0,o=0;i<w*h;i++,o+=3){ const v=raw[o]|(raw[o+1]<<8); im.data[i*4]=((v>>11)&31)*255/31; im.data[i*4+1]=((v>>5)&63)*255/63; im.data[i*4+2]=(v&31)*255/31; im.data[i*4+3]=raw[o+2]; }
+  c.putImageData(im,0,0); return cv.toDataURL();
+}
+function hash8(raw){ let h=2166136261; for(let i=0;i<raw.length;i++){ h^=raw[i]; h=Math.imul(h,16777619); } return (h>>>0).toString(16).padStart(8,"0"); }
+function iconFromCanvas(cv, idBase){
+  const raw=canvasToRaw(cv), id=(idBase||("u"+hash8(raw)))+"-"+cv.width;
+  return ICONS[id] = {id,w:cv.width,h:cv.height,raw,b64:toB64(raw),url:rawToUrl(raw,cv.width,cv.height),onDevice:false};
+}
+function makeEmojiIcon(ch,size){
+  const cv=document.createElement("canvas"); cv.width=cv.height=size; const c=cv.getContext("2d");
+  c.font=`${Math.round(size*0.78)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+  c.textAlign="center"; c.textBaseline="middle"; c.fillText(ch,size/2,size/2+size*0.05);
+  const base=("e"+[...ch].map(x=>x.codePointAt(0).toString(16)).filter(x=>x!=="fe0f").join("-")).slice(0,17);
+  return iconFromCanvas(cv, base);
+}
+function imageToIcon(img,size){
+  const cv=document.createElement("canvas"); cv.width=cv.height=size; const c=cv.getContext("2d");
+  const k=Math.min(size/img.width,size/img.height), w=img.width*k, h=img.height*k;
+  c.drawImage(img,(size-w)/2,(size-h)/2,w,h); return iconFromCanvas(cv);
+}
+function setIcon(ic){ const t=tile(); if(!t||!ic) return; t.icon=ic.id; showIconPrev(); renderDeck(); }
+function showIconPrev(){
+  const t=tile(), box=$("iconPrev"); box.textContent="kein Icon"; if(!t||!t.icon) return;
+  const ic=ICONS[t.icon]; if(!ic){ box.textContent=t.icon; ensureIcon(t.icon).then(showIconPrev); return; }
+  const im=document.createElement("img"); im.src=ic.url; box.textContent=""; box.appendChild(im);
+}
+async function ensureIcon(id){        // Icon vom Gerät holen, falls es nur dort liegt
+  if(ICONS[id]||ICON_PENDING.has(id)||!T) return;
+  ICON_PENDING.add(id);
+  try{
+    const r=await cmd("ICONGET "+id); const m=/^ICON (\d+) (\d+) (\S+)/.exec(r[0]);
+    if(m){ const w=+m[1],h=+m[2],raw=fromB64(m[3]); ICONS[id]={id,w,h,raw,b64:m[3],url:rawToUrl(raw,w,h),onDevice:true}; renderDeck(); }
+  }catch(e){ log("Icon '"+id+"' nicht geladen: "+e.message,"err"); }
+  ICON_PENDING.delete(id);
+}
+async function uploadIcons(){
+  const used=new Set(S.cur.tiles.map(t=>t.icon).filter(Boolean));
+  for(const id of used){
+    const ic=ICONS[id]; if(!ic||ic.onDevice) continue;
+    let r=await cmd("ICONBEGIN "+id+" "+ic.w+" "+ic.h); if(r[0]!=="OK") throw new Error("Icon "+id+": "+r[0]);
+    for(let i=0;i<ic.raw.length;i+=2400){ r=await cmd("ICONDATA "+toB64(ic.raw.subarray(i,i+2400))); if(r[0]!=="OK") throw new Error("Icon "+id+": "+r[0]); }
+    r=await cmd("ICONEND"); if(r[0]!=="OK") throw new Error("Icon "+id+": "+r[0]);
+    ic.onDevice=true;
+  }
+}
+EMOJIS.forEach(e=>{ const b=document.createElement("button"); b.textContent=e; b.onclick=()=>{ setIcon(makeEmojiIcon(e,+$("iconSize").value)); $("emojiPick").classList.add("hidden"); }; $("emojiPick").appendChild(b); });
+$("btnEmoji").onclick=()=>$("emojiPick").classList.toggle("hidden");
+$("btnImg").onclick=()=>$("iconFile").click();
+$("iconFile").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return; const img=new Image();
+  img.onload=()=>{ setIcon(imageToIcon(img,+$("iconSize").value)); URL.revokeObjectURL(img.src); };
+  img.onerror=()=>alert("Das Bild konnte nicht gelesen werden."); img.src=URL.createObjectURL(f); e.target.value="";
+};
+$("btnIconDel").onclick=()=>{ const t=tile(); if(!t) return; t.icon=""; showIconPrev(); renderDeck(); };
+
+/* ───────── Speichern ───────── */
+function toJson(){
+  const p=S.cur, n=p.cols*p.rows;
+  const tiles=p.tiles.filter(t=>t.slot>=0&&t.slot<n).sort((a,b)=>a.slot-b.slot)
+    .map(t=>{ const o={slot:t.slot,label:t.label,color:t.color,type:t.type,spec:t.spec}; if(t.icon) o.icon=t.icon; return o; });
+  const bad=tiles.find(t=>t.type!=="none"&&!t.spec);
+  if(bad) throw new Error("Die Kachel in Zeile "+(Math.floor(bad.slot/p.cols)+1)+", Spalte "+(bad.slot%p.cols+1)+" hat eine Aktion ohne Angabe.");
+  return JSON.stringify({v:2,name:p.name,exe:p.exe,cols:p.cols,rows:p.rows,tiles});
+}
+$("btnSave").onclick = async () => {
+  try{
+    if(!S.cur.name.trim()) throw new Error("Bitte einen Namen eintragen.");
+    if(!S.id) throw new Error("Bitte eine ID eintragen.");
+    const body = toJson();
+    await uploadIcons();                                   // neue Icons zuerst aufs Gerät
+    const r = await cmd("PUT "+S.id+" "+body);
+    if(r[0]!=="OK") throw new Error(r[0]);
+    S.isNew=false; $("pId").disabled=true; $("saveInfo").textContent="Gespeichert ✓";
+    await refreshList();
+  }catch(e){ $("saveInfo").textContent=e.message; log("Fehler: "+e.message,"err"); }
+};
+$("btnUse").onclick = async () => {
+  if(S.isNew){ $("saveInfo").textContent="Erst speichern."; return; }
+  const r = await cmd("USE "+S.id); if(r[0]==="OK") await refreshList(); else log("Fehler: "+r[0],"err");
+};
+
+/* ───────── Werkzeuge ───────── */
+$("btnPing").onclick = () => cmd("PING").catch(e=>log(e.message,"err"));
+$("btnStatus").onclick = () => cmd("STATUS").catch(e=>log(e.message,"err"));
+$("btnLog").onclick = () => cmd("LOG","--- LOG Ende ---").catch(e=>log(e.message,"err"));
+$("btnPanel").onclick = () => cmd("PANEL").catch(e=>log(e.message,"err"));
+$("btnRedraw").onclick = () => cmd("REDRAW").catch(e=>log(e.message,"err"));
+$("btnTime").onclick = () => cmd("TIME "+Math.floor(Date.now()/1000)).catch(e=>log(e.message,"err"));
+
+if(!("serial" in navigator)) $("noSerial").classList.remove("hidden");
+window.addEventListener("beforeunload", e => { if(T instanceof SerialTransport) T.close(); });
+</script>
+</body>
+</html>

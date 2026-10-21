@@ -1,0 +1,11 @@
+*.bak
+.DS_Store
+build/
+build/
+dependencies.lock
+managed_components/
+sdkconfig
+sdkconfig.old
+tools/helper-app/bin/
+tools/helper-app/obj/
+DEVLOG.md
