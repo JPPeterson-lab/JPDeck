@@ -63,7 +63,7 @@ void settingsExtrasInit()
     s_title1 = mkLabel(&font_montserrat_22, 20, 12, 0, "Automatischer Profilwechsel");
     s_state1 = mkLabel(&font_montserrat_18, 20, 46, 0, "");
     s_hint1  = mkLabel(&font_montserrat_18, 20, 72, 840,
-                       "Wechselt das Profil nach dem Programm im Vordergrund (Feld \"Programm\" im Profil, sonst \"Standard\"). Braucht den DeckPad-Helfer auf dem PC.");
+                       "Wechselt das Profil nach dem Programm im Vordergrund (Feld \"Programm\" im Profil, sonst \"Standard\"). Braucht den JPDeck-Helfer auf dem PC.");
     s_sw1 = mkSwitch(8, profilesAutoSwitch(), cbSwitch1);
 
     s_line = lv_obj_create(s_box);                        // Trennlinie
@@ -77,7 +77,7 @@ void settingsExtrasInit()
     s_title2 = mkLabel(&font_montserrat_22, 20, 138, 0, "Tasten am PC ausf\xc3\xbchren");
     s_state2 = mkLabel(&font_montserrat_18, 20, 172, 0, "");
     s_hint2  = mkLabel(&font_montserrat_18, 20, 198, 840,
-                       "Der DeckPad-Helfer f\xc3\xbchrt Tasten, Medientasten und Programmstarts am PC aus, statt dass das Board als USB-Tastatur auftritt. F\xc3\xbcr Boards ohne USB-Tastatur.");
+                       "Der JPDeck-Helfer f\xc3\xbchrt Tasten, Medientasten und Programmstarts am PC aus, statt dass das Board als USB-Tastatur auftritt. F\xc3\xbcr Boards ohne USB-Tastatur.");
     s_sw2 = mkSwitch(134, profilesHostActions(), cbSwitch2);
 
     settingsExtrasApplyTheme();

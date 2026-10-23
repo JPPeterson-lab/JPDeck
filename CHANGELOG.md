@@ -2,6 +2,15 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v0.7.0 (2026-10-24)
+
+### Geändert
+- **Umbenennung: aus „DeckPad“ wird „JPDeck“** (der Name „DeckPad“ war schon vergeben). Neues Repo `JPPeterson-lab/JPDeck`, Seite `jppeterson-lab.github.io/JPDeck/`, Firmware-Image `jpdeck-merged.bin`, Editor `JPDeck Editor`, Windows-Helfer `JPDeck-Helper.exe`. Die alten GitHub-Adressen leiten auf das Repo weiter, die alte Pages-Adresse nicht
+- **Firmware:** USB-Namen „JPDeck COM“ und „JPDeck Tasten“, `VER` meldet `JPDECK <Version>`. USB-ID (303A:4DC0) und Seriennummer bleiben, damit Windows das Gerät weiter wiedererkennt; nach dem Flashen kann der Gerätename in Windows noch den alten Namen zeigen, bis das Gerät einmal neu eingesteckt wurde
+- **Boot-Bildschirm:** das Logo heißt jetzt „JPDeck“ (JP schwarz, Deck in Standardblau, als ein Wort gesetzt)
+- **Windows-Helfer:** übernimmt Einstellungen und Autostart-Eintrag der alten Version („DeckPad-Helper“), räumt die alten Einträge auf und erkennt Editor-Fenster mit beiden Namen. Die alte `DeckPad-Helper.exe` kann gelöscht werden
+- Die Einträge unterhalb dieses Abschnitts behalten den damaligen Namen „DeckPad“
+
 ## v0.6.1 (2026-10-16)
 
 ### Neu
@@ -90,7 +99,7 @@ Das Projekt wechselt von **Alpha** zu **Beta**: der Funktionsumfang steht, Kernf
 
 ### Neu
 - **DeckPad Editor** (`tools/editor/deckpad-editor.html`): Profile am **Windows-PC** im Browser (Chrome/Edge, Web Serial) anlegen, bearbeiten, kopieren, löschen und aktivieren. Kacheln anklicken, Beschriftung, **Farbe** (Farbwähler und Palette), **Aktion** (Medien, Tastenkombination mit Modifier-Kästchen und Tastenaufnahme, Programm starten, Text, Host-Nachricht) und Schnellauswahl-Vorlagen. Profil-Sicherung als Datei, Demo-Modus ohne Gerät. Setzt beim Verbinden die **Uhrzeit** des PCs. Zeigt Status und Geräte-Log
-- **Editor online:** über GitHub Pages erreichbar (<https://jppeterson-lab.github.io/DeckPad/editor.html>), nichts zu installieren. `tools/deploy_editor.sh` kopiert die Datei nach `docs/index.html`
+- **Editor online:** über GitHub Pages erreichbar (<https://jppeterson-lab.github.io/JPDeck/editor.html>), nichts zu installieren. `tools/deploy_editor.sh` kopiert die Datei nach `docs/index.html`
 - **Editor erkennt den falschen Port:** der Auswahldialog zeigt nur Espressif-Geräte (VID 0x303A), also den nativen USB-Port; der UART-Port (CH343) wird erkannt und erklärt. „Alle Ports anzeigen“ hebt den Filter auf
 - **Aktion `run`:** startet ein Programm, eine Datei oder einen Link über Win+R (Programmname, Pfad, Internetadresse). Das Gerät drückt Win+R, tippt den Text und bestätigt mit Enter
 - **COM-Befehle:** `VER`, `LIST`, `GET <id>`, `PUT <id> <json>`, `DEL <id>`, `USE <id>`, `TIME <Unix-Sekunden>` (zusätzlich zu `PING`, `STATUS`, `LOG`). Das Gerät übernimmt Änderungen sofort (Roller, Raster, Farben)

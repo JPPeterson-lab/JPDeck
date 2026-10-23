@@ -18,7 +18,7 @@
 
 static void err(const char* why) { char b[96]; snprintf(b, sizeof(b), "ERR %s", why); usbCdcSendLine(b); }
 
-static void cmdVer(const char*)  { usbCdcSendLine("DECKPAD " FIRMWARE_VERSION); }
+static void cmdVer(const char*)  { usbCdcSendLine("JPDECK " FIRMWARE_VERSION); }
 
 static void cmdList(const char*) { String s; profileListJson(s); usbCdcSendLine(s.c_str()); }
 

@@ -1,7 +1,7 @@
 {
-  "name": "DeckPad",
-  "version": "0.6.1",
-  "funding_url": "https://github.com/JPPeterson-lab/DeckPad",
+  "name": "JPDeck",
+  "version": "0.7.0",
+  "funding_url": "https://github.com/JPPeterson-lab/JPDeck",
   "new_install_prompt_erase": true,
   "builds": [
     {
@@ -9,7 +9,7 @@
       "improv": false,
       "parts": [
         {
-          "path": "firmware/deckpad-merged.bin",
+          "path": "firmware/jpdeck-merged.bin",
           "offset": 0
         }
       ]

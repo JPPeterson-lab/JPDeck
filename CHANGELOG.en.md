@@ -2,6 +2,15 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v0.7.0 (2026-10-24)
+
+### Changed
+- **Renamed: "DeckPad" becomes "JPDeck"** (the name "DeckPad" was already taken). New repo `JPPeterson-lab/JPDeck`, page `jppeterson-lab.github.io/JPDeck/`, firmware image `jpdeck-merged.bin`, editor `JPDeck Editor`, Windows helper `JPDeck-Helper.exe`. The old GitHub addresses redirect to the repo, the old Pages address does not
+- **Firmware:** USB names "JPDeck COM" and "JPDeck Tasten", `VER` reports `JPDECK <version>`. The USB id (303A:4DC0) and serial number stay so Windows still recognises the device; after flashing, the device name in Windows may keep showing the old name until the device has been replugged once
+- **Boot screen:** the logo now reads "JPDeck" (JP black, Deck in the standard blue, set as one word)
+- **Windows helper:** takes over the settings and autostart entry of the old version ("DeckPad-Helper"), cleans up the old entries and recognises editor windows with both names. The old `DeckPad-Helper.exe` can be deleted
+- Entries below this section keep the name "DeckPad" they were written under
+
 ## v0.6.1 (2026-10-16)
 
 ### New
@@ -90,7 +99,7 @@ The project moves from **alpha** to **beta**: the feature set is complete and th
 
 ### New
 - **DeckPad Editor** (`tools/editor/deckpad-editor.html`): create, edit, copy, delete and activate profiles on the **Windows PC** in the browser (Chrome/Edge, Web Serial). Click tiles, set label, **colour** (picker and palette), **action** (media, key combination with modifier boxes and key capture, start a program, text, host message) and quick-pick templates. Back up a profile as a file, demo mode without a device. Sets the PC's **time** on connect. Shows status and device log
-- **Editor online:** available via GitHub Pages (<https://jppeterson-lab.github.io/DeckPad/editor.html>), nothing to install. `tools/deploy_editor.sh` copies the file to `docs/index.html`
+- **Editor online:** available via GitHub Pages (<https://jppeterson-lab.github.io/JPDeck/editor.html>), nothing to install. `tools/deploy_editor.sh` copies the file to `docs/index.html`
 - **Editor recognises the wrong port:** the chooser only lists Espressif devices (VID 0x303A), i.e. the native USB port; the UART port (CH343) is recognised and explained. "Alle Ports anzeigen" (show all ports) removes the filter
 - **Action `run`:** starts a program, file or link via Win+R (program name, path, web address). The device presses Win+R, types the text and confirms with Enter
 - **COM commands:** `VER`, `LIST`, `GET <id>`, `PUT <id> <json>`, `DEL <id>`, `USE <id>`, `TIME <unix seconds>` (in addition to `PING`, `STATUS`, `LOG`). The device applies changes immediately (roller, grid, colours)

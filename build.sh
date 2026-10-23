@@ -1,5 +1,5 @@
 #!/bin/bash
-# Baut und flasht DeckPad (ESP-IDF 5.5.x unter ~/esp/esp-idf-v5.5.5).
+# Baut und flasht JPDeck (ESP-IDF 5.5.x unter ~/esp/esp-idf-v5.5.5).
 #   bash build.sh                  nur bauen
 #   bash build.sh flash PORT       bauen und auf den UART-Port des Boards flashen (z. B. /dev/cu.usbmodemXXXX)
 #   bash build.sh clean            build/ und sdkconfig loeschen (z. B. nach Aenderungen an sdkconfig.defaults)

@@ -1,11 +1,11 @@
 #pragma once
-// Zentrale Einstellungen des DeckPad. Alles, was man später mal anpassen will, steht hier.
+// Zentrale Einstellungen des JPDeck. Alles, was man später mal anpassen will, steht hier.
 
-#define FIRMWARE_VERSION "0.6.1"
+#define FIRMWARE_VERSION "0.7.0"
 
 // ── USB-Geraet (so meldet sich das Board am Windows-PC an) ─────────────────────
 #define DECK_USB_MANUFACTURER "JPPeterson-lab"
-#define DECK_USB_PRODUCT      "DeckPad"
+#define DECK_USB_PRODUCT      "JPDeck"
 // Kennung: Espressif-VID mit eigener PID. 0x1001 gehoert der USB-JTAG/Seriell-Schnittstelle der Chips; deren Windows-Treiber
 // (WinUSB, z. B. durch die IDF/OpenOCD-Einrichtung) bindet sich an USB\VID_303A&PID_1001&MI_02 und verdraengt dort die Tastatur.
 // PID provisorisch: fuer eine Veroeffentlichung eine eigene beantragen (Espressif vergibt sie kostenlos, oder pid.codes mit VID 0x1209).

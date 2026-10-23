@@ -1,4 +1,4 @@
-# DeckPad - Custom Partition Table (16 MB Flash, Waveshare ESP32-S3-Touch-LCD-7B)
+# JPDeck - Custom Partition Table (16 MB Flash, Waveshare ESP32-S3-Touch-LCD-7B)
 # Kein OTA: eine einzige Factory-App, der Rest gehoert den Nutzerdaten (Profile, Icons).
 # Alle Offsets 4 KB-, App-Offsets 64 KB-ausgerichtet; 0x400000 = 4 MB.
 # Name,     Type, SubType,  Offset,    Size,      Flags

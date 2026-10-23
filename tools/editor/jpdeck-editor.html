@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DeckPad Editor</title>
+<title>JPDeck Editor</title>
 <style>
 :root{
   --bg:#f4f6f9; --panel:#ffffff; --text:#1d2733; --muted:#66727f; --line:#d9dfe6;
@@ -67,8 +67,8 @@ label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
 </head>
 <body>
 <header>
-  <h1>🎛️ DeckPad Editor</h1>
-  <button id="btnConnect" class="primary">Mit DeckPad verbinden</button>
+  <h1>🎛️ JP<span style="color:#87ceeb">Deck</span> Editor</h1>
+  <button id="btnConnect" class="primary">Mit JPDeck verbinden</button>
   <button id="btnAllPorts" title="zeigt auch andere COM-Ports, z. B. den UART-Port">Alle Ports anzeigen</button>
   <button id="btnDemo">Demo ohne Gerät</button>
   <span id="status" class="pill">nicht verbunden</span>
@@ -178,7 +178,7 @@ label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
       </div>
 
       <div class="row" style="margin-top:18px">
-        <button id="btnSave" class="primary">Auf DeckPad speichern</button>
+        <button id="btnSave" class="primary">Auf JPDeck speichern</button>
         <button id="btnUse">Auf dem Gerät aktivieren</button>
         <span id="saveInfo" class="hint"></span>
       </div>
@@ -214,7 +214,7 @@ const PRESETS = [
 class SerialTransport {
   constructor(){ this.port=null; this.writer=null; this.buf=""; this.q=[]; this.cur=null; this.onLine=null; }
   async open(showAll){
-    // Nur Espressif-Geräte (VID 0x303A) anzeigen: das ist der native USB-Port des DeckPad.
+    // Nur Espressif-Geräte (VID 0x303A) anzeigen: das ist der native USB-Port des JPDeck.
     // Der UART-Port (CH343, VID 0x1A86) antwortet nie auf Befehle und würde sonst zur Auswahl stehen.
     this.port = await navigator.serial.requestPort(showAll ? {} : {filters:[{usbVendorId:0x303A}]});
     this.info = this.port.getInfo ? this.port.getInfo() : {};
@@ -285,7 +285,7 @@ class DemoTransport {   // Verhält sich wie das Gerät, nur im Speicher
     await new Promise(r=>setTimeout(r,60));
     const sp=line.indexOf(" "), cmd=(sp<0?line:line.slice(0,sp)).toUpperCase(), a=sp<0?"":line.slice(sp+1);
     if(cmd==="PING") return ["PONG"];
-    if(cmd==="VER") return ["DECKPAD demo"];
+    if(cmd==="VER") return ["JPDECK demo"];
     if(cmd==="STATUS") return ["v=demo up=1s usb=1 flush_n=0"];
     if(cmd==="LOG") return ["--- LOG Anfang ---","       1 [Demo] kein echtes Gerät","--- LOG Ende ---"];
     if(cmd==="TIME"||cmd==="REDRAW"||cmd==="PANEL") return ["OK"];
@@ -330,7 +330,7 @@ function diagnose(info){
   if(!info || info.usbVendorId===undefined) return "";
   if(info.usbVendorId===0x1A86) return "Das ist der UART-Port des Boards (CH343, nur zum Flashen und für Debug-Ausgaben). Bitte das USB-Kabel in die andere USB-C-Buchse (beschriftet „USB“) stecken und diese Verbindung wählen.";
   if(info.usbVendorId===0x303A) return "Das ist der richtige Port (Espressif), aber das Gerät antwortet nicht. Mögliche Ursachen: alte Firmware ohne Editor-Befehle (v0.2.0 nötig), das Gerät hängt, oder ein anderes Programm (Terminal, Arduino-Monitor) hat den Port offen. Gerät neu starten und es nochmal versuchen.";
-  return "Unbekanntes USB-Gerät (VID "+hex(info.usbVendorId)+"). Falls es nicht das DeckPad ist, einen anderen Port wählen.";
+  return "Unbekanntes USB-Gerät (VID "+hex(info.usbVendorId)+"). Falls es nicht das JPDeck ist, einen anderen Port wählen.";
 }
 async function start(transport, label, showAll){
   T = transport;
@@ -347,7 +347,7 @@ async function start(transport, label, showAll){
   }catch(e){
     setStatus("Fehler", false); log("Fehler: "+e.message, "err");
     if(T.info){ const d=diagnose(T.info); if(d) log("Hinweis: "+d, "err"); }
-    else if(e.name==="NotFoundError") log("Hinweis: Kein passender Port ausgewählt. Wird kein Gerät angezeigt, ist das DeckPad nicht über die USB-Buchse (nativ) verbunden. „Alle Ports anzeigen“ zeigt auch andere Anschlüsse.", "err");
+    else if(e.name==="NotFoundError") log("Hinweis: Kein passender Port ausgewählt. Wird kein Gerät angezeigt, ist das JPDeck nicht über die USB-Buchse (nativ) verbunden. „Alle Ports anzeigen“ zeigt auch andere Anschlüsse.", "err");
     if(T.close) try{ await T.close(); }catch(_){}      // Port wieder freigeben, sonst scheitert der nächste Versuch
   }
 }

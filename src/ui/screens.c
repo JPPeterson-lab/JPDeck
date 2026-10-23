@@ -617,23 +617,23 @@ void create_screen_screenboot() {
             // labelwetter
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.labelwetter = obj;
-            lv_obj_set_pos(obj, 300, 57);
+            lv_obj_set_pos(obj, 337, 57);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_montserrat_92, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(obj, lv_color_hex(common_000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_label_set_text(obj, "Deck");
+            lv_label_set_text(obj, "JP");
         }
         {
             // labelcube
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.labelcube = obj;
-            lv_obj_set_pos(obj, 542, 57);
+            lv_obj_set_pos(obj, 449, 57);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_montserrat_92, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(obj, lv_color_hex(common_87ceeb), LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_label_set_text(obj, "Pad");
+            lv_label_set_text(obj, "Deck");
         }
         {
             // labelauthor

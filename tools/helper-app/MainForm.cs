@@ -5,12 +5,12 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace DeckPadHelper
+namespace JPDeckHelper
 {
     /// <summary>Statusfenster plus Symbol im Infobereich. Das Fenster zu schliessen versteckt es nur; "Beenden" beendet den Helfer.</summary>
     internal sealed class MainForm : Form
     {
-        private const string EditorUrl = "https://jppeterson-lab.github.io/DeckPad/editor.html";
+        private const string EditorUrl = "https://jppeterson-lab.github.io/JPDeck/editor.html";
 
         private readonly HelperCore core = new HelperCore();
         private readonly NotifyIcon tray = new NotifyIcon();
@@ -32,7 +32,7 @@ namespace DeckPadHelper
             this.startHidden = startHidden;
             appIcon = LoadIcon();
 
-            Text = "DeckPad-Helfer";
+            Text = "JPDeck-Helfer";
             Icon = appIcon;
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(460, 400);
@@ -53,7 +53,7 @@ namespace DeckPadHelper
 
             chkAutostart.Text = "Mit Windows starten (im Hintergrund)";
             chkAutostart.SetBounds(16, 262, 428, 22);
-            chkExit.Text = "Beenden, wenn das DeckPad getrennt wird";
+            chkExit.Text = "Beenden, wenn das JPDeck getrennt wird";
             chkExit.SetBounds(16, 286, 428, 22);
 
             var hint = new Label
@@ -79,7 +79,7 @@ namespace DeckPadHelper
             menu.Items.Add("Beenden", null, (s, e) => ExitApp());
             tray.ContextMenuStrip = menu;
             tray.Icon = appIcon;
-            tray.Text = "DeckPad-Helfer";
+            tray.Text = "JPDeck-Helfer";
             tray.DoubleClick += (s, e) => ShowWindow();
 
             btnEditor.Click += (s, e) => OpenEditor();
@@ -97,7 +97,7 @@ namespace DeckPadHelper
         {
             try
             {
-                using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("deckpad.ico"))
+                using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("jpdeck.ico"))
                     if (s != null) return new Icon(s);
             }
             catch { }
@@ -173,7 +173,7 @@ namespace DeckPadHelper
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Einstellung konnte nicht gespeichert werden:\n" + ex.Message, "DeckPad-Helfer", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Einstellung konnte nicht gespeichert werden:\n" + ex.Message, "JPDeck-Helfer", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -181,12 +181,12 @@ namespace DeckPadHelper
         {
             string port = core.PortName;
             if (core.EditorHasPort) lblStatus.Text = "Editor hat den Anschluss";
-            else if (port.Length > 0) lblStatus.Text = "DeckPad verbunden";
-            else lblStatus.Text = "DeckPad nicht gefunden";
+            else if (port.Length > 0) lblStatus.Text = "JPDeck verbunden";
+            else lblStatus.Text = "JPDeck nicht gefunden";
             lblStatus.ForeColor = port.Length > 0 ? Color.FromArgb(0, 128, 60) : (core.EditorHasPort ? SystemColors.ControlText : Color.FromArgb(190, 40, 40));
             lblPort.Text = port.Length > 0 ? "Anschluss: " + port : "Anschluss: –  (USB-Kabel am nativen Port einstecken)";
             lblFg.Text = "Vordergrund: " + (core.Foreground.Length > 0 ? core.Foreground : "–");
-            tray.Text = port.Length > 0 ? "DeckPad-Helfer – verbunden (" + port + ")" : "DeckPad-Helfer – nicht verbunden";
+            tray.Text = port.Length > 0 ? "JPDeck-Helfer – verbunden (" + port + ")" : "JPDeck-Helfer – nicht verbunden";
 
             string line;
             bool added = false;
@@ -198,7 +198,7 @@ namespace DeckPadHelper
             }
             if (added) logBox.TopIndex = Math.Max(0, logBox.Items.Count - 1);
 
-            // Option "Beenden, wenn das DeckPad getrennt wird"
+            // Option "Beenden, wenn das JPDeck getrennt wird"
             if (core.DeviceLostCount != seenLost)
             {
                 seenLost = core.DeviceLostCount;

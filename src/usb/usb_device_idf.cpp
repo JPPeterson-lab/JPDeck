@@ -60,8 +60,8 @@ static const char* s_strings[] = {
   DECK_USB_MANUFACTURER,            // 1
   DECK_USB_PRODUCT,                 // 2
   "DECKPAD-0001",                   // 3: feste Seriennummer, damit Windows immer dieselbe COM-Nummer vergibt
-  "DeckPad COM",                    // 4: CDC
-  "DeckPad Tasten",                 // 5: HID
+  "JPDeck COM",                    // 4: CDC
+  "JPDeck Tasten",                 // 5: HID
 };
 
 extern "C" {

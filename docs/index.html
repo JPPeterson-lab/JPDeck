@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DeckPad – Web-Installer</title>
+  <title>JPDeck – Web-Installer</title>
   <script type="module" src="https://unpkg.com/esp-web-tools@10.4.0/dist/web/install-button.js"></script>
   <style>
     * { box-sizing: border-box; }
@@ -36,7 +36,7 @@
 <body data-lang="de">
 <div class="container">
   <div class="lang"><button id="bde" class="on">DE</button><button id="ben">EN</button></div>
-  <h1>DeckPad <span class="badge">v0.6.1</span></h1>
+  <h1>JP<span style="color:#87ceeb">Deck</span> <span class="badge">v0.7.0</span></h1>
   <p class="subtitle">
     <span class="de">Stream-Deck-artiges Touch-Pad auf dem Waveshare ESP32-S3-Touch-LCD-7B – Tastatur und COM-Port am Windows-PC</span>
     <span class="en">Stream-Deck-style touch pad on the Waveshare ESP32-S3-Touch-LCD-7B – keyboard and COM port on the Windows PC</span>
@@ -64,7 +64,7 @@
     <p class="de">Profile, Tasten, Farben und Icons am PC bearbeiten (Chrome oder Edge, Board per „USB“ verbunden). Für den automatischen Profilwechsel und den Helfer-Modus zusätzlich das kleine Helfer-Programm.</p>
     <p class="en">Edit profiles, keys, colours and icons on the PC (Chrome or Edge, board connected via "USB"). For the automatic profile switch and helper mode also the small helper program.</p>
     <a href="editor.html"><span class="de">Profil-Editor öffnen</span><span class="en">Open profile editor</span></a>
-    <a href="DeckPad-Helper.exe" download><span class="de">Helfer herunterladen (DeckPad-Helper.exe)</span><span class="en">Download helper (DeckPad-Helper.exe)</span></a>
+    <a href="JPDeck-Helper.exe" download><span class="de">Helfer herunterladen (JPDeck-Helper.exe)</span><span class="en">Download helper (JPDeck-Helper.exe)</span></a>
     <p class="de" style="margin-top:.6rem;font-size:.85em">Läuft nur, wenn Sie es starten (Autostart ist optional, standardmäßig aus). Windows warnt vor der ungesignierten Datei: <b>Weitere Informationen → Trotzdem ausführen</b>.</p>
     <p class="en" style="margin-top:.6rem;font-size:.85em">Runs only when you start it (autostart is optional, off by default). Windows warns about the unsigned file: <b>More info → Run anyway</b>.</p>
   </div>
@@ -74,12 +74,12 @@
     <p class="de"><strong>Warum ein Installer?</strong> Das Projekt wechselt mittelfristig von der Arduino IDE auf <strong>ESP-IDF</strong> (damit gibt es keine Bildstreifen beim Speichern, kein Flimmern und eine saubere USB-Schicht). Selbst bauen ist möglich, setzt aber gute Kenntnisse im ESP32-Umfeld voraus (ESP-IDF, Partitionen, Flash-Optionen). Wer das nicht braucht, nutzt am besten diesen Installer.</p>
     <p class="en"><strong>Why an installer?</strong> The project is moving from the Arduino IDE to <strong>ESP-IDF</strong> in the medium term (no streaks when saving, no flicker, a clean USB layer). Building it yourself is possible but requires good knowledge of the ESP32 world (ESP-IDF, partitions, flash options). If you do not need that, use this installer.</p>
     <p class="de"><strong>Hardware:</strong> Waveshare ESP32-S3-Touch-LCD-7B · 7&quot; 1024×600 RGB-Display · GT911-Touch · 16 MB Flash, 8 MB PSRAM<br>
-      <strong>Quellcode:</strong> <a href="https://github.com/JPPeterson-lab/DeckPad" target="_blank">JPPeterson-lab/DeckPad</a> · <a href="https://github.com/JPPeterson-lab/DeckPad/wiki" target="_blank">Wiki</a></p>
+      <strong>Quellcode:</strong> <a href="https://github.com/JPPeterson-lab/JPDeck" target="_blank">JPPeterson-lab/JPDeck</a> · <a href="https://github.com/JPPeterson-lab/JPDeck/wiki" target="_blank">Wiki</a></p>
     <p class="en"><strong>Hardware:</strong> Waveshare ESP32-S3-Touch-LCD-7B · 7&quot; 1024×600 RGB display · GT911 touch · 16 MB flash, 8 MB PSRAM<br>
-      <strong>Source:</strong> <a href="https://github.com/JPPeterson-lab/DeckPad" target="_blank">JPPeterson-lab/DeckPad</a> · <a href="https://github.com/JPPeterson-lab/DeckPad/wiki" target="_blank">Wiki</a></p>
+      <strong>Source:</strong> <a href="https://github.com/JPPeterson-lab/JPDeck" target="_blank">JPPeterson-lab/JPDeck</a> · <a href="https://github.com/JPPeterson-lab/JPDeck/wiki" target="_blank">Wiki</a></p>
   </div>
 
-  <footer>DeckPad · MIT · JPPeterson-lab<br>UI: <a href="https://picopixel.io" target="_blank">PicoPixel</a> · Icons: <a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a> (MIT)</footer>
+  <footer>JPDeck · MIT · JPPeterson-lab<br>UI: <a href="https://picopixel.io" target="_blank">PicoPixel</a> · Icons: <a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a> (MIT)</footer>
 </div>
 <script>
   const set = l => { document.body.dataset.lang = l; document.documentElement.lang = l;

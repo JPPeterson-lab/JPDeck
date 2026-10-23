@@ -1,5 +1,5 @@
 #pragma once
-// UI-Logik des DeckPad: erzeugt die Kacheln dynamisch aus dem aktiven Profil, verdrahtet Profil-Roller,
+// UI-Logik des JPDeck: erzeugt die Kacheln dynamisch aus dem aktiven Profil, verdrahtet Profil-Roller,
 // Theme, Helligkeit, Uhr und USB-Status. Kennt LVGL und die Profile, aber kein USB-Protokoll:
 // Tastendruecke gehen als deckActionRun() an die Aktionsschicht.
 // Alles nur im LVGL-Kontext bzw. mit lvgl_port_lock() aufrufen.

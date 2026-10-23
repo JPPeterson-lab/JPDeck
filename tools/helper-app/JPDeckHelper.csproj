@@ -1,19 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- DeckPad-Helfer: kleines Windows-Programm (Infobereich + Statusfenster). .NET Framework 4.8 ist in Windows 10/11 schon enthalten,
+  <!-- JPDeck-Helfer: kleines Windows-Programm (Infobereich + Statusfenster). .NET Framework 4.8 ist in Windows 10/11 schon enthalten,
        die fertige Datei ist daher winzig und braucht keine Installation. Gebaut wird auch auf dem Mac: bash tools/build_helper.sh -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>DeckPad-Helper</AssemblyName>
-    <RootNamespace>DeckPadHelper</RootNamespace>
+    <AssemblyName>JPDeck-Helper</AssemblyName>
+    <RootNamespace>JPDeckHelper</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
-    <ApplicationIcon>deckpad.ico</ApplicationIcon>
+    <ApplicationIcon>jpdeck.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Version>1.0.0</Version>
     <Company>JPPeterson-lab</Company>
-    <Product>DeckPad-Helfer</Product>
+    <Product>JPDeck-Helfer</Product>
     <Copyright>JPPeterson-lab, MIT</Copyright>
     <Deterministic>true</Deterministic>
     <DebugType>none</DebugType>
@@ -22,6 +22,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     <Reference Include="System.Management" />
-    <EmbeddedResource Include="deckpad.ico" LogicalName="deckpad.ico" />
+    <EmbeddedResource Include="jpdeck.ico" LogicalName="jpdeck.ico" />
   </ItemGroup>
 </Project>

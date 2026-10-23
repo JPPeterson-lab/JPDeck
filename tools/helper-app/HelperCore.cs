@@ -7,14 +7,14 @@ using System.Management;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace DeckPadHelper
+namespace JPDeckHelper
 {
     /// <summary>
     /// Die eigentliche Arbeit, in einem eigenen Thread:
-    ///  - findet das DeckPad (USB-Geraet 303A:4DC0, Rueckfall 303A:1001) und oeffnet seinen COM-Port,
+    ///  - findet das JPDeck (USB-Geraet 303A:4DC0, Rueckfall 303A:1001) und oeffnet seinen COM-Port,
     ///  - meldet das Programm im Vordergrund ("ACTIVE chrome.exe") fuer den automatischen Profilwechsel,
-    ///  - fuehrt Aktionen aus, die das DeckPad schickt ("DO media|keys|text|run ..."),
-    ///  - gibt den Port frei, solange ein Fenster "DeckPad Editor" im Vordergrund ist (ein COM-Port gehoert nur einem Programm).
+    ///  - fuehrt Aktionen aus, die das JPDeck schickt ("DO media|keys|text|run ..."),
+    ///  - gibt den Port frei, solange ein Fenster "JPDeck Editor" (oder alt: "DeckPad Editor") im Vordergrund ist (ein COM-Port gehoert nur einem Programm).
     /// </summary>
     internal sealed class HelperCore
     {
@@ -32,7 +32,7 @@ namespace DeckPadHelper
 
         public void Start()
         {
-            thread = new Thread(Run) { IsBackground = true, Name = "DeckPad-Helfer" };
+            thread = new Thread(Run) { IsBackground = true, Name = "JPDeck-Helfer" };
             thread.Start();
         }
 
@@ -71,7 +71,9 @@ namespace DeckPadHelper
                             curExe = exe;
                             Foreground = exe;
                         }
-                        editorOpen = title != null && title.IndexOf("DeckPad Editor", StringComparison.OrdinalIgnoreCase) >= 0 && pid != ownPid;
+                        editorOpen = title != null && pid != ownPid
+                            && (title.IndexOf("JPDeck Editor", StringComparison.OrdinalIgnoreCase) >= 0
+                                || title.IndexOf("DeckPad Editor", StringComparison.OrdinalIgnoreCase) >= 0);   // alter Name bis v0.6.1
                         if (editorOpen && port != null)
                         {
                             ClosePort();
@@ -139,7 +141,7 @@ namespace DeckPadHelper
             PortName = name;
             buf = ""; lastExe = "";
             sendTimer.Restart();
-            Log("Verbunden mit dem DeckPad an " + name);
+            Log("Verbunden mit dem JPDeck an " + name);
         }
 
         private void ClosePort()
@@ -151,7 +153,7 @@ namespace DeckPadHelper
             try { sp.Close(); sp.Dispose(); } catch { }
         }
 
-        /// <summary>COM-Port des DeckPad: eigene Kennung 303A:4DC0, 303A:1001 als Rueckfall (aeltere Firmware).</summary>
+        /// <summary>COM-Port des JPDeck: eigene Kennung 303A:4DC0, 303A:1001 als Rueckfall (aeltere Firmware).</summary>
         private static string FindPort()
         {
             try

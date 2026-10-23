@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
-namespace DeckPadHelper
+namespace JPDeckHelper
 {
     /// <summary>Windows-Funktionen: Vordergrundfenster ermitteln und Tasten senden.</summary>
     internal static class Native

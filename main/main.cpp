@@ -1,4 +1,4 @@
-// DeckPad - Stream-Deck-aehnliches Touch-Pad auf dem Waveshare ESP32-S3-Touch-LCD-7B (1024x600, RGB + GT911)
+// JPDeck - Stream-Deck-aehnliches Touch-Pad auf dem Waveshare ESP32-S3-Touch-LCD-7B (1024x600, RGB + GT911)
 //
 // ESP-IDF-Projekt mit Arduino-ESP32 als Komponente: setup()/loop() werden ueber CONFIG_AUTOSTART_ARDUINO aufgerufen.
 // Bauen und Flashen: bash build.sh flash <UART-Port>   (Details im README)
@@ -35,7 +35,7 @@ void setup()
 {
     Serial.begin(115200);                       // UART0 -> USB-C-UART-Port des Boards
     Serial.println();
-    logDiag("[DeckPad] Start v" FIRMWARE_VERSION ", Reset-Grund %d, CPU %u MHz, PSRAM %u KB", (int)esp_reset_reason(),
+    logDiag("[JPDeck] Start v" FIRMWARE_VERSION ", Reset-Grund %d, CPU %u MHz, PSRAM %u KB", (int)esp_reset_reason(),
             (unsigned)getCpuFrequencyMhz(), (unsigned)(ESP.getPsramSize() / 1024));
     logDiag("[Display] Pixeltakt %u MHz, Bounce %d Zeilen, Zeichenpuffer %d Zeilen (SRAM), Flush-Stuecke %d Zeilen, Ausrichtung %d px",
             (unsigned)(EXAMPLE_LCD_PIXEL_CLOCK_HZ / 1000000), (int)(EXAMPLE_RGB_BOUNCE_BUFFER_SIZE / EXAMPLE_LCD_H_RES),
