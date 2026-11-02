@@ -1,7 +1,7 @@
 # 🎛️ JPDeck
 
 ![Status](https://img.shields.io/badge/Status-Beta-yellow?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.9.0-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v0.9.1-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-Waveshare%20ESP32--S3--Touch--LCD--7B-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-7%22%201024×600%20RGB-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-MIT-blue?style=flat-square)
@@ -11,7 +11,7 @@
 
 Das Projekt ist ein **ESP-IDF-Projekt** (Arduino-ESP32 läuft als Komponente für `Serial`, LittleFS und ArduinoJson), ohne WLAN und ohne OTA.
 
-> **🟡 Beta (v0.9.0):** Der Kern ist fertig und läuft am Gerät und am Windows-PC (Tastatur, Medientasten, COM-Port, Editor, Icons, freie Kachelplätze, Schnellwahl). Keine Bildstreifen beim Speichern, kein Flimmern. Noch nicht ausführlich getestet sind Rechner, Timer, der Windows-Helfer und der Helfer-Modus; Dateiformate und Befehle können sich bis zur 1.0 noch ändern. Fehler bitte als [Issue](https://github.com/JPPeterson-lab/JPDeck/issues) melden.
+> **🟡 Beta (v0.9.1):** Der Kern ist fertig und läuft am Gerät und am Windows-PC (Tastatur, Medientasten, COM-Port, Editor, Icons, freie Kachelplätze, Schnellwahl). Keine Bildstreifen beim Speichern, kein Flimmern. Noch nicht ausführlich getestet sind Rechner, Timer, der Windows-Helfer und der Helfer-Modus; Dateiformate und Befehle können sich bis zur 1.0 noch ändern. Fehler bitte als [Issue](https://github.com/JPPeterson-lab/JPDeck/issues) melden.
 
 ---
 
@@ -192,7 +192,7 @@ Siehe [CREDITS.md](CREDITS.md). GUI: [LVGL](https://lvgl.io). Oberfläche: [Pico
 
 The project is an **ESP-IDF project** (Arduino-ESP32 runs as a component for `Serial`, LittleFS and ArduinoJson), with no Wi-Fi and no OTA.
 
-> **🟡 Beta (v0.9.0):** The core is finished and runs on the device and on the Windows PC (keyboard, media keys, COM port, editor, icons, free tile positions, quick select). No streaks when saving, no flicker. Calculator, timer, the Windows helper and helper mode are not yet thoroughly tested; file formats and commands may still change before 1.0. Please report bugs as an [issue](https://github.com/JPPeterson-lab/JPDeck/issues).
+> **🟡 Beta (v0.9.1):** The core is finished and runs on the device and on the Windows PC (keyboard, media keys, COM port, editor, icons, free tile positions, quick select). No streaks when saving, no flicker. Calculator, timer, the Windows helper and helper mode are not yet thoroughly tested; file formats and commands may still change before 1.0. Please report bugs as an [issue](https://github.com/JPPeterson-lab/JPDeck/issues).
 
 ## 🚀 Installation
 

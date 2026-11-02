@@ -2,6 +2,12 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v0.9.1 (2026-11-03)
+
+### Fixed
+- **3-finger roll was jerky and did not trigger reliably.** Causes and remedy: (1) The finger count flickered between two and three, and every flicker reset the gesture. A new count now counts only after several equal readings, a short dropout to two fingers (up to about 80 ms) is bridged while rolling. (2) Fingers sticking out over the edge of the surface counted as lifted; whoever touches down on the surface now has all further fingers counted anywhere below the header. (3) When the sensor swapped the order of the fingers the angle jumped; each finger is now matched to the nearest one of the last reading, outliers are discarded and the angle is smoothed. (4) Status text and finger circles are only redrawn on change
+- New in the device log at start: `[Touch] GT911: … max. N fingers, report interval … ms` (shows how many fingers the touch controller reports at all)
+
 ## v0.9.0 (2026-11-03)
 
 ### New

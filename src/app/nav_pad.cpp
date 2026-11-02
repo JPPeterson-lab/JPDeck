@@ -59,6 +59,8 @@ static const float ZOOM_STEP_PX  = 26.0f;    // Fingerabstand, der eine Mausrad-
 static const float JOY_DEAD_PX   = 10.0f;    // Joystick: Totzone um den Nullpunkt
 static const float JOY_ZOOM_DEAD = 22.0f;
 
+struct Pt { float x, y; };
+
 struct Engine {
   int      n = 0, settle = 0;
   uint32_t lastMs = 0;
@@ -67,7 +69,10 @@ struct Engine {
   float    remX = 0, remY = 0, zoomAcc = 0;    // noch nicht gesendete Bruchteile
   bool     pressed = false;
   uint8_t  buttons = 0, mods = 0;
-  float    rollPrev = 0, rollAcc = 0, phi = 0;  // 3 Finger: letzter Winkel, aufgelaufener Winkel bis zum naechsten Tastendruck, Winkel auf dem Kreis
+  float    rollAcc = 0, phi = 0, rollSmooth = 0; // 3 Finger: aufgelaufener Winkel bis zum naechsten Tastendruck, Winkel auf dem Kreis, geglaettete Drehung
+  Pt       prev3[3];                             // 3 Finger: Positionen der letzten Messung
+  bool     engaged = false;                      // die Beruehrung hat auf der Flaeche begonnen (dann zaehlen auch Finger ausserhalb)
+  int      cand = 0, candN = 0;                  // Fingerzahl-Entprellung: neue Zahl und wie oft sie hintereinander gemessen wurde
 };
 static Engine E;
 
@@ -100,24 +105,25 @@ static void releaseGesture()
   E.pressed = false; E.buttons = 0; E.mods = 0;
 }
 
-struct Pt { float x, y; };
-static int collect(const LvglTouchSnapshot& t, Pt* out)   // nur Finger auf der Flaeche
+static int collect(const LvglTouchSnapshot& t, Pt* out)
 {
+  // Eine Beruehrung zaehlt, wenn ihr erster Finger auf der Flaeche aufsetzt. Danach zaehlen alle Finger unterhalb der Kopfzeile,
+  // auch wenn drei gespreizte Finger ueber den Rand der Flaeche hinausragen (sonst wuerden sie "verschwinden").
+  if (t.n == 0) { E.engaged = false; return 0; }
+  if (!E.engaged) {
+    for (int i = 0; i < t.n; i++)
+      if (t.x[i] >= PAD_X && t.x[i] < PAD_X + PAD_W && t.y[i] >= PAD_Y && t.y[i] < PAD_Y + PAD_H) { E.engaged = true; break; }
+    if (!E.engaged) return 0;
+  }
   int k = 0;
   for (int i = 0; i < t.n && k < 3; i++)
-    if (t.x[i] >= PAD_X && t.x[i] < PAD_X + PAD_W && t.y[i] >= PAD_Y && t.y[i] < PAD_Y + PAD_H) out[k++] = { (float)t.x[i], (float)t.y[i] };
+    if (t.y[i] >= PAD_Y - 20) out[k++] = { (float)t.x[i], (float)t.y[i] };
   return k;
-}
-
-static float fingerAngle(const Pt* p)               // Winkel des ersten Fingers um den Mittelpunkt aller drei
-{
-  const float cx = (p[0].x + p[1].x + p[2].x) / 3, cy = (p[0].y + p[1].y + p[2].y) / 3;
-  return atan2f(p[0].y - cy, p[0].x - cx);
 }
 
 static void capture(const Pt* p, int n)
 {
-  if (n == 3) { E.rollPrev = fingerAngle(p); E.rollAcc = 0; E.phi = 0; }
+  if (n == 3) { for (int i = 0; i < 3; i++) E.prev3[i] = p[i]; E.rollAcc = 0; E.phi = 0; E.rollSmooth = 0; }
   if (n == 1) { E.orgX = E.baseX = p[0].x; E.orgY = E.baseY = p[0].y; E.orgDist = E.baseDist = 0; }
   else if (n == 2) {
     E.orgX = E.baseX = (p[0].x + p[1].x) / 2; E.orgY = E.baseY = (p[0].y + p[1].y) / 2;
@@ -183,10 +189,31 @@ static const char* gestureTick(const Pt* p, int n, float dt)
     return "Schwenken + Zoom";
   }
   if (n == 3) {                                       // Rollen: Drehung der drei Finger um ihren Mittelpunkt
-    const float a = fingerAngle(p);
-    float da = a - E.rollPrev;
-    if (da > (float)M_PI) da -= 2 * (float)M_PI; else if (da < -(float)M_PI) da += 2 * (float)M_PI;
-    E.rollPrev = a;
+    // Die Reihenfolge der Finger kann zwischen zwei Messungen wechseln: jeder Finger wird dem naechstliegenden der letzten Messung zugeordnet
+    static const int PERM[6][3] = { {0,1,2}, {0,2,1}, {1,0,2}, {1,2,0}, {2,0,1}, {2,1,0} };
+    int bi = 0; float best = 1e9f;
+    for (int k2 = 0; k2 < 6; k2++) {
+      float sum = 0;
+      for (int i = 0; i < 3; i++) sum += hypotf(p[i].x - E.prev3[PERM[k2][i]].x, p[i].y - E.prev3[PERM[k2][i]].y);
+      if (sum < best) { best = sum; bi = k2; }
+    }
+    const float cx = (p[0].x + p[1].x + p[2].x) / 3, cy = (p[0].y + p[1].y + p[2].y) / 3;
+    const float pcx = (E.prev3[0].x + E.prev3[1].x + E.prev3[2].x) / 3, pcy = (E.prev3[0].y + E.prev3[1].y + E.prev3[2].y) / 3;
+    float sumDa = 0, rad = 0;
+    for (int i = 0; i < 3; i++) {
+      const Pt& q = E.prev3[PERM[bi][i]];
+      float d = atan2f(p[i].y - cy, p[i].x - cx) - atan2f(q.y - pcy, q.x - pcx);
+      if (d > (float)M_PI) d -= 2 * (float)M_PI; else if (d < -(float)M_PI) d += 2 * (float)M_PI;
+      sumDa += d;
+      rad += hypotf(p[i].x - cx, p[i].y - cy);
+    }
+    for (int i = 0; i < 3; i++) E.prev3[i] = p[i];
+    rad /= 3;
+    if (rad < 30.0f) return "Finger weiter auseinander";       // zu dicht: der Winkel rauscht nur
+    float da = sumDa / 3;
+    if (fabsf(da) > 0.6f) da = 0;                                // Ausreisser (falsche Zuordnung): ignorieren
+    E.rollSmooth = 0.55f * E.rollSmooth + 0.45f * da;            // glaetten, sonst ruckelt der Winkel mit dem Rauschen des Sensors
+    da = fabsf(E.rollSmooth) < 0.0015f ? 0.0f : E.rollSmooth;
     if (P.roll.left) {                                // Programm mit Tastenpaar (Blender): alle 12 Grad ein Tastendruck
       E.rollAcc += da * gain;
       const float step = 0.21f;
@@ -290,43 +317,63 @@ static lv_obj_t* makeBtn(lv_obj_t* parent, int x, int y, int w, int h, const cha
 static void moveFinger(int i, bool show, float x, float y)
 {
   if (!finger[i]) return;
-  if (!show) { lv_obj_add_flag(finger[i], LV_OBJ_FLAG_HIDDEN); return; }
-  lv_obj_clear_flag(finger[i], LV_OBJ_FLAG_HIDDEN);
-  lv_obj_set_pos(finger[i], (int)x - PAD_X - 36, (int)y - PAD_Y - 36);
+  if (!show) { if (!lv_obj_has_flag(finger[i], LV_OBJ_FLAG_HIDDEN)) lv_obj_add_flag(finger[i], LV_OBJ_FLAG_HIDDEN); return; }
+  if (lv_obj_has_flag(finger[i], LV_OBJ_FLAG_HIDDEN)) lv_obj_clear_flag(finger[i], LV_OBJ_FLAG_HIDDEN);
+  const int nx = (int)x - PAD_X - 36, ny = (int)y - PAD_Y - 36;
+  if (lv_obj_get_x(finger[i]) != nx || lv_obj_get_y(finger[i]) != ny) lv_obj_set_pos(finger[i], nx, ny);
 }
 
 static uint8_t s_lastN = 0xFF;
+static void setStatus(const char* text)
+{
+  if (strcmp(lv_label_get_text(lblStatus), text) != 0) lv_label_set_text(lblStatus, text);
+}
+
 static void tickCb(lv_timer_t*)
 {
   if (!scr) return;
   LvglTouchSnapshot t;
   lvglPortTouch(t);
   Pt p[3];
-  const int n = collect(t, p);
+  const int raw = collect(t, p);
   const uint32_t now = millis();
   float dt = (now - E.lastMs) / 1000.0f;
   E.lastMs = now;
   if (dt < 0.002f) dt = 0.002f;
   if (dt > 0.05f) dt = 0.05f;
 
-  for (int i = 0; i < 5; i++) moveFinger(i, i < n, i < n ? p[i].x : 0, i < n ? p[i].y : 0);
+  for (int i = 0; i < 5; i++) moveFinger(i, i < raw, i < raw ? p[i].x : 0, i < raw ? p[i].y : 0);
 
-  const char* what = "";
-  if (n != E.n) {                                      // Fingerzahl gewechselt: neue Geste, neuer Nullpunkt
-    releaseGesture();
-    E.n = n; E.settle = 2;
-    capture(p, n);
-  } else if (n >= 1 && n <= 3) {
-    if (E.settle > 0) { E.settle--; capture(p, n); }   // die ersten Messungen nach dem Aufsetzen sind unruhig
-    else what = gestureTick(p, n, dt);
+  // Fingerzahl entprellen: der Sensor meldet bei mehreren Fingern gern kurz einen weniger oder mehr. Jedes Flackern wuerde die Geste
+  // zuruecksetzen (ruckelig). Eine neue Zahl gilt erst, wenn sie mehrere Messungen hintereinander gleich bleibt; beim Rollen mit
+  // drei Fingern wird ein kurzer Aussetzer auf zwei Finger (bis ca. 80 ms) einfach ueberbrueckt.
+  if (raw == E.n) E.cand = 0;
+  else {
+    if (raw == E.candN) E.cand++; else { E.candN = raw; E.cand = 1; }
+    int need = raw > E.n ? 3 : 2;
+    if (E.n == 3 && raw == 2) need = 8;
+    else if (E.n == 2 && raw == 1) need = 4;
+    if (E.cand >= need) {
+      releaseGesture();
+      E.n = raw; E.settle = 3; E.cand = 0;
+      capture(p, raw);
+    } else {
+      return;                                          // Zahl noch unsicher: diese Messung auslassen
+    }
   }
 
-  if (n != s_lastN || what[0]) {
-    s_lastN = (uint8_t)n;
+  const char* what = "";
+  if (E.n >= 1 && E.n <= 3 && raw == E.n) {
+    if (E.settle > 0) { E.settle--; capture(p, E.n); }  // die ersten Messungen nach dem Aufsetzen sind unruhig
+    else what = gestureTick(p, E.n, dt);
+  }
+
+  if (E.n != s_lastN || what[0]) {
+    s_lastN = (uint8_t)E.n;
     char b[48];
-    if (!usbHostConnected()) lv_label_set_text(lblStatus, "PC nicht verbunden");
-    else if (n == 0) lv_label_set_text(lblStatus, "bereit");
-    else { snprintf(b, sizeof(b), "%d Finger  %s", n, what); lv_label_set_text(lblStatus, b); }
+    if (!usbHostConnected()) setStatus("PC nicht verbunden");
+    else if (E.n == 0) setStatus("bereit");
+    else { snprintf(b, sizeof(b), "%d Finger  %s", E.n, what); setStatus(b); }
   }
 }
 

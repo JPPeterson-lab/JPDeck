@@ -17,6 +17,7 @@
 
 #include "Arduino.h"
 #include "io_extension.h"
+#include "../app/diag_log.h"
 #include "rgb_lcd_port.h"
 
 #include "gt911.h"
@@ -440,6 +441,11 @@ static esp_err_t touch_gt911_read_cfg(esp_lcd_touch_handle_t tp)
 
     ESP_LOGI(TAG, "TouchPad_ID:0x%02x,0x%02x,0x%02x", buf[0], buf[1], buf[2]);
     ESP_LOGI(TAG, "TouchPad_Config_Version:%d", buf[3]);
+    // Wie viele Finger meldet der Controller (Register 0x804C, Bit 0-3) und wie oft (0x8056: Wert + 5 ms)?
+    uint8_t num = 0, rate = 0;
+    touch_gt911_i2c_read(tp, 0x804C, &num, 1);
+    touch_gt911_i2c_read(tp, 0x8056, &rate, 1);
+    logDiag("[Touch] GT911: Config v%d, max. %d Finger, Meldeintervall %d ms", buf[3], num & 0x0F, (rate & 0x0F) + 5);
 
     return ESP_OK;
 }

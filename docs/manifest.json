@@ -1,6 +1,6 @@
 {
   "name": "JPDeck",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "funding_url": "https://github.com/JPPeterson-lab/JPDeck",
   "new_install_prompt_erase": true,
   "builds": [

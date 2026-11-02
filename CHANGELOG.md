@@ -2,6 +2,12 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v0.9.1 (2026-11-03)
+
+### Behoben
+- **3-Finger-Rollen ruckelte und ließ sich nicht zuverlässig auslösen.** Ursachen und Abhilfe: (1) Die Fingerzahl flackerte zwischen zwei und drei, und jedes Flackern setzte die Geste zurück. Eine neue Zahl gilt jetzt erst nach mehreren gleichen Messungen, ein kurzer Aussetzer auf zwei Finger (bis ca. 80 ms) wird beim Rollen überbrückt. (2) Finger, die über den Rand der Fläche hinausragten, galten als abgesetzt; wer auf der Fläche aufsetzt, dessen weitere Finger zählen jetzt überall unterhalb der Kopfzeile. (3) Wechselte der Sensor die Reihenfolge der Finger, sprang der Winkel; jeder Finger wird jetzt dem nächstliegenden der letzten Messung zugeordnet, Ausreißer werden verworfen und der Winkel geglättet. (4) Statusanzeige und Fingerkreise werden nur noch bei Änderung gezeichnet
+- Neu im Geräte-Log beim Start: `[Touch] GT911: … max. N Finger, Meldeintervall … ms` (zeigt, wie viele Finger der Touch-Controller überhaupt meldet)
+
 ## v0.9.0 (2026-11-03)
 
 ### Neu
