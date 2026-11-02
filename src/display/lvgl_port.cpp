@@ -8,6 +8,7 @@
 #include <Arduino.h>
 #include "lvgl_port.h"
 #include "src/ui/screens.h"
+#include "../app/power_idle.h"
 #include <stdint.h>
 
 static const char *TAG = "lv_port";
@@ -111,7 +112,13 @@ static void touchpad_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
     uint16_t x[5], y[5];
     uint8_t cnt = 0;
     esp_lcd_touch_read_data(tp);
-    if (esp_lcd_touch_get_coordinates(tp, x, y, NULL, &cnt, 5) && cnt > 0) {
+    const bool raw = esp_lcd_touch_get_coordinates(tp, x, y, NULL, &cnt, 5) && cnt > 0;
+    if (!idleFilterTouch(raw)) {                               // diese Beruehrung hat nur das Display geweckt
+        data->state = LV_INDEV_STATE_RELEASED;
+        s_touch.n = 0;
+        return;
+    }
+    if (raw) {
         data->point.x = x[0];                                     // LVGL bedient nur den ersten Finger
         data->point.y = y[0];
         data->state = LV_INDEV_STATE_PRESSED;

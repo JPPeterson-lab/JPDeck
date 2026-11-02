@@ -14,4 +14,6 @@ void backlightSet(uint8_t percent)
 
 uint8_t backlightGet() { return s_percent; }
 
+void backlightPower(bool on) { IO_EXTENSION_Output(IO_EXTENSION_IO_2, on ? 1 : 0); }   // IO2 = Backlight-Enable (siehe rgb_lcd_port.cpp)
+
 void backlightInit() { backlightSet(s_percent); }

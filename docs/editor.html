@@ -100,6 +100,10 @@ label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
     <div class="row" style="align-items:center"><label for="qSel2" style="margin:0;width:2.2em">P3</label><select id="qSel2" data-q="2" style="flex:1"></select></div>
     <div class="row" style="align-items:center"><label for="qSel3" style="margin:0;width:2.2em">P4</label><select id="qSel3" data-q="3" style="flex:1"></select></div>
     <div class="row" style="align-items:center"><label for="qSel4" style="margin:0;width:2.2em">P5</label><select id="qSel4" data-q="4" style="flex:1"></select></div>
+    <h2 style="margin-top:18px">Display im Ruhezustand</h2>
+    <p class="hint" style="margin-top:0">Dunkelt das Display ab oder schaltet es aus, wenn lange nichts angetippt wurde. Das erste Antippen weckt es und löst keine Taste aus. Gilt für das ganze Gerät.</p>
+    <div class="row" style="align-items:center"><label for="idleSec" style="margin:0;width:7em">Abdunkeln nach</label><select id="idleSec" style="flex:1"></select></div>
+    <div class="row" style="align-items:center"><label for="idleDim" style="margin:0;width:7em">Dann</label><select id="idleDim" style="flex:1"></select></div>
     <div class="row" style="margin-top:12px">
       <button id="btnExport" disabled>Als Datei sichern</button>
       <button id="btnImport">Datei laden</button>
@@ -158,6 +162,7 @@ label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
           <option value="run">Programm, Datei oder Link starten</option>
           <option value="text">Text tippen</option>
           <option value="nav">3D-Navigation (Touch-Fläche wie eine Space Mouse)</option>
+          <option value="strip">Streifen: Scrollen / Zeitleiste / Zoom</option>
           <option value="host">Nachricht an PC-Programm (für später)</option>
         </select>
         <div id="aMedia" class="hidden"><label for="tMedia">Taste</label><select id="tMedia"></select></div>
@@ -179,7 +184,15 @@ label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
           <select id="tNav"><option value="fusion">Fusion 360</option><option value="shapr3d">Shapr3D</option><option value="bambu">Bambu Studio</option><option value="blender">Blender</option></select>
           <p class="hint">Die Kachel öffnet auf dem JPDeck eine leere Touch-Fläche: 1 Finger dreht die Ansicht, 2 Finger schwenken, Auseinanderziehen zoomt. Das JPDeck sendet dafür Mausbewegungen und das Mausrad an den PC, passend zum gewählten Programm. Modus (Touchpad/Joystick), Empfindlichkeit und Zoomrichtung stellt man auf der Seite selbst ein.</p>
         </div>
+        <div id="aStrip" class="hidden">
+          <label for="tStrip">Streifen</label>
+          <select id="tStrip"><option value="scroll">Scrollen (senkrecht)</option><option value="hscroll">Waagerecht scrollen</option><option value="timeline">Zeitleiste (Bild für Bild)</option><option value="zoom">Zoom (Strg + Mausrad)</option></select>
+          <p class="hint">Die Kachel öffnet auf dem JPDeck eine Touch-Fläche, auf der nur eine Richtung zählt, wie ein großes Scrollrad. „Zeitleiste“ sendet die Pfeiltasten links/rechts, mit zwei Fingern mit Shift (große Schritte). Der erste Kontakt ist der Nullpunkt, die Fläche geht also blind.</p>
+        </div>
         <div id="aHost" class="hidden"><label for="tHost">Nachricht</label><input id="tHost" maxlength="95"><p class="hint">Wird als „ACTION …“ über den COM-Port gesendet.</p></div>
+        <label for="tLive">Live-Wert vom PC (optional)</label>
+        <select id="tLive"><option value="">– keiner –</option><option value="vol">Lautstärke</option><option value="mute">Ton stumm / an</option><option value="mic">Mikrofon stumm / an</option><option value="cpu">CPU-Last</option><option value="ram">Arbeitsspeicher-Last</option></select>
+        <p class="hint">Zeigt den Wert unter der Beschriftung, die Kachel wird bei „stumm“ oder Last ab 90 % rot. Braucht den JPDeck-Helfer auf dem PC; ohne ihn steht „--“ da. Die Aktion der Kachel bleibt, wie sie ist.</p>
         <div class="row" style="margin-top:12px"><button id="btnTileClear" class="danger">Kachel entfernen</button></div>
       </div>
 
@@ -211,6 +224,8 @@ const PRESETS = [
   ["Kopieren|#2980b9|keys|ctrl+c|📋","Kopieren (Strg+C)"],["Einfügen|#2980b9|keys|ctrl+v|📌","Einfügen (Strg+V)"],["Rückgängig|#8e44ad|keys|ctrl+z|↩️","Rückgängig (Strg+Z)"],
   ["Speichern|#27ae60|keys|ctrl+s|💾","Speichern (Strg+S)"],["Mikrofon|#8e44ad|keys|ctrl+shift+m|🎤","Mikrofon (Strg+Shift+M)"],
   ["3D|#16a085|nav|fusion|🧊","3D-Navigation (Touch-Fläche)"],
+  ["Scrollen|#2980b9|strip|scroll|↕️","Scroll-Streifen"],["Zeitleiste|#8e44ad|strip|timeline|🎞️","Zeitleisten-Streifen (Bild für Bild)"],
+  ["Ton|#27ae60|media|mute||vol","Stumm mit Lautstärke-Anzeige (Live)"],["Mikro|#8e44ad|keys|ctrl+shift+m||mic","Mikrofon-Taste mit Anzeige (Live)"],["CPU|#34495e|none|||cpu","CPU-Last (Live, ohne Aktion)"],["RAM|#34495e|none|||ram","Arbeitsspeicher (Live, ohne Aktion)"],
   ["Screenshot|#d35400|keys|win+shift+s|📷","Bildschirmausschnitt (Win+Shift+S)"],["Desktop|#34495e|keys|win+d|🖥️","Desktop anzeigen (Win+D)"],
   ["Task-\nmanager|#7f8c8d|keys|ctrl+shift+esc","Task-Manager"],
   ["Rechner|#16a085|run|calc|🧮","Programm: Rechner"],["Editor|#2c3e50|run|notepad|📝","Programm: Editor"],["Explorer|#f39c12|run|explorer|📁","Programm: Explorer"],
@@ -285,7 +300,7 @@ class DemoTransport {   // Verhält sich wie das Gerät, nur im Speicher
         {label:"Strg+Shift+M",color:"#8e44ad",type:"keys",spec:"ctrl+shift+m"},{label:"Stumm",color:"#c0392b",type:"media",spec:"mute"}]},
       bambu:{name:"Bambu Studio",exe:"bambu-studio.exe",cols:5,rows:3,settings:{theme:"dark",brightness:70},tiles:[
         {label:"Speichern",color:"#27ae60",type:"keys",spec:"ctrl+s"},{label:"Editor",color:"#2c3e50",type:"run",spec:"notepad"}]}};
-    this.active="standard"; this.icons={}; this.up=null; this.quick=["","","","",""];
+    this.active="standard"; this.icons={}; this.up=null; this.quick=["","","","",""]; this.idle={sec:0,dim:10};
   }
   async open(){} async close(){}
   async send(line, multi){
@@ -303,8 +318,9 @@ class DemoTransport {   // Verhält sich wie das Gerät, nur im Speicher
     if(cmd==="ICONLIST") return [JSON.stringify({icons:Object.values(this.icons).map(i=>({id:i.id,w:i.w,h:i.h}))})];
     if(cmd==="ICONGET") return this.icons[a] ? ["ICON "+this.icons[a].w+" "+this.icons[a].h+" "+this.icons[a].b64] : ["ERR unbekannt"];
     if(cmd==="ICONDEL"){ delete this.icons[a]; return ["OK"]; }
+    if(cmd==="IDLE"){ const q=a.split(" "); if(q.length!==2) return ["ERR Format: IDLE <sekunden> <helligkeit>"]; this.idle={sec:+q[0],dim:+q[1]}; return ["OK"]; }
     if(cmd==="QUICK"){ const q=a.split(" "); if(q.length!==5) return ["ERR Format: QUICK <id1> <id2> <id3> <id4> <id5> (- = frei)"]; this.quick=q.map(x=>x==="-"?"":x); return ["OK"]; }
-    if(cmd==="LIST") return [JSON.stringify({active:this.active,quick:this.quick.map(x=>this.p[x]?x:""),profiles:Object.entries(this.p).map(([id,v])=>({id,name:v.name,exe:v.exe}))})];
+    if(cmd==="LIST") return [JSON.stringify({active:this.active,quick:this.quick.map(x=>this.p[x]?x:""),idle:this.idle,profiles:Object.entries(this.p).map(([id,v])=>({id,name:v.name,exe:v.exe}))})];
     if(cmd==="GET") return this.p[a] ? [JSON.stringify(Object.assign({v:1},this.p[a]))] : ["ERR unbekannt"];
     if(cmd==="PUT"){ const i=a.indexOf(" "); try{ this.p[a.slice(0,i)]=JSON.parse(a.slice(i+1)); return ["OK"]; }catch(e){ return ["ERR JSON fehlerhaft"]; } }
     if(cmd==="DEL"){ if(Object.keys(this.p).length<2||!this.p[a]) return ["ERR nicht geloescht"]; delete this.p[a]; if(this.active===a) this.active=Object.keys(this.p)[0]; return ["OK"]; }
@@ -372,8 +388,24 @@ $("btnDisc").onclick = async () => {
 async function refreshList(){
   const r = await cmd("LIST");
   const d = JSON.parse(r[0]);
-  S.list = d.profiles; S.active = d.active; S.quick = d.quick || ["","","","",""]; renderList();
+  S.list = d.profiles; S.active = d.active; S.quick = d.quick || ["","","","",""]; S.idle = d.idle || {sec:0,dim:10}; renderList();
 }
+/* Display im Ruhezustand */
+const IDLE_SECS=[[0,"Nie"],[15,"15 Sekunden"],[30,"30 Sekunden"],[60,"1 Minute"],[120,"2 Minuten"],[300,"5 Minuten"],[600,"10 Minuten"],[1800,"30 Minuten"],[3600,"1 Stunde"]];
+const IDLE_DIMS=[[0,"Display ganz aus (bis zum nächsten Antippen)"],[3,"auf 3 % dimmen"],[5,"auf 5 % dimmen"],[10,"auf 10 % dimmen"],[20,"auf 20 % dimmen"],[35,"auf 35 % dimmen"],[50,"auf 50 % dimmen"]];
+function renderIdle(){
+  const fill=(id,list,val)=>{ const s=$(id); s.innerHTML=""; let found=false; list.forEach(([v,t])=>{ s.add(new Option(t,v)); if(v==val) found=true; });
+    if(!found) s.add(new Option(String(val),val)); s.value=String(val); s.disabled=!T; };
+  const i=S.idle||{sec:0,dim:10}; fill("idleSec",IDLE_SECS,i.sec); fill("idleDim",IDLE_DIMS,i.dim);
+}
+["idleSec","idleDim"].forEach(id=>$(id).onchange=async()=>{
+  const sec=+$("idleSec").value, dim=+$("idleDim").value;
+  try{
+    const r=await cmd("IDLE "+sec+" "+dim);
+    if(r[0].startsWith("ERR")) throw new Error(r[0]);
+    S.idle={sec,dim}; log(sec? "Display: nach "+$("idleSec").selectedOptions[0].text+" "+(dim? "auf "+dim+" % dimmen." : "ausschalten.") : "Display-Ruhezustand ausgeschaltet.");
+  }catch(e){ log("Fehler: "+e.message,"err"); refreshList(); }
+});
 /* Schnellwahl P1..P5: Auswahlfelder fuellen; eine Aenderung geht sofort ans Geraet */
 function renderQuick(){
   document.querySelectorAll("select[data-q]").forEach(sel=>{
@@ -403,7 +435,7 @@ function renderList(){
     box.appendChild(d);
   });
   $("btnDup").disabled = $("btnDel").disabled = $("btnExport").disabled = !S.cur;
-  renderQuick();
+  renderQuick(); renderIdle();
 }
 async function selectProfile(id){
   try{
@@ -417,7 +449,7 @@ function normalize(p){
   p.cols = clamp(p.cols||5,1,6); p.rows = clamp(p.rows||3,1,4);
   delete p.settings;                       // Design und Helligkeit gelten am Geraet fuer alle Profile, nicht mehr im Profil
   const cap=p.cols*p.rows, used=new Set();
-  p.tiles = (p.tiles||[]).map((t,i)=>({slot:Number.isInteger(t.slot)?t.slot:i,label:t.label||"",color:t.color||"#34495e",type:t.type||"none",spec:t.spec||"",icon:t.icon||""}))
+  p.tiles = (p.tiles||[]).map((t,i)=>({slot:Number.isInteger(t.slot)?t.slot:i,label:t.label||"",color:t.color||"#34495e",type:t.type||"none",spec:t.spec||"",icon:t.icon||"",live:t.live||""}))
     .filter(t=>t.slot>=0 && t.slot<cap && !used.has(t.slot) && used.add(t.slot));   // Platz im Raster muss gueltig und einmalig sein
   p.v = 1; return p;
 }
@@ -511,7 +543,7 @@ function renderDeck(){
     b.ondragleave=()=>b.classList.remove("over");
     b.ondrop=e=>{ e.preventDefault(); b.classList.remove("over"); const f=S.drag; S.drag=null; moveTile(f,i); };
     b.ondragend=()=>{ S.drag=null; };
-    b.onclick=()=>{ S.sel=i; if(!tileAt(i)) p.tiles.push({slot:i,label:"",color:"#34495e",type:"none",spec:"",icon:""}); renderDeck(); renderTile(); };
+    b.onclick=()=>{ S.sel=i; if(!tileAt(i)) p.tiles.push({slot:i,label:"",color:"#34495e",type:"none",spec:"",icon:"",live:""}); renderDeck(); renderTile(); };
     d.appendChild(b);
   }
 }
@@ -532,16 +564,19 @@ function renderTile(){
   if(t.type==="text") $("tText").value=t.spec;
   if(t.type==="host") $("tHost").value=t.spec;
   if(t.type==="nav") $("tNav").value=t.spec||"fusion";
+  if(t.type==="strip") $("tStrip").value=t.spec||"scroll";
+  $("tLive").value=t.live||"";
   if(t.type==="keys") parseKeys(t.spec);
 }
-function showAction(type){ ["media","keys","run","text","nav","host"].forEach(a=>$("a"+a[0].toUpperCase()+a.slice(1)).classList.toggle("hidden", a!==type)); }
+function showAction(type){ ["media","keys","run","text","nav","strip","host"].forEach(a=>$("a"+a[0].toUpperCase()+a.slice(1)).classList.toggle("hidden", a!==type)); }
 function setColor(c){ const t=tile(); if(!t) return; t.color=c; $("tColor").value=c; $("tColorHex").textContent=c; renderDeck(); }
 $("tColor").oninput = e => setColor(e.target.value);
 $("tLabel").oninput = e => { const t=tile(); t.label=e.target.value; renderDeck(); };
 $("tType").onchange = e => {
   const t=tile(); t.type=e.target.value; showAction(t.type);
-  t.spec = t.type==="media" ? MEDIA[0][0] : t.type==="nav" ? "fusion" : "";
+  t.spec = t.type==="media" ? MEDIA[0][0] : t.type==="nav" ? "fusion" : t.type==="strip" ? "scroll" : "";
   if(t.type==="nav") $("tNav").value="fusion";
+  if(t.type==="strip") $("tStrip").value="scroll";
   if(t.type==="media"){ $("tMedia").value=t.spec; }
   if(t.type==="keys"){ parseKeys(""); }
   ["tRun","tText","tHost"].forEach(i=>$(i).value="");
@@ -551,9 +586,11 @@ $("tRun").oninput = e => tile().spec=e.target.value;
 $("tText").oninput = e => tile().spec=e.target.value;
 $("tHost").oninput = e => tile().spec=e.target.value;
 $("tNav").onchange = e => tile().spec=e.target.value;
+$("tStrip").onchange = e => tile().spec=e.target.value;
+$("tLive").onchange = e => { tile().live=e.target.value; };
 $("tPreset").onchange = e => {
-  const v=e.target.value; if(!v) return; const [label,color,type,spec,emoji]=v.split("|"); const t=tile();
-  Object.assign(t,{label,color,type,spec,icon:""});
+  const v=e.target.value; if(!v) return; const [label,color,type,spec,emoji,live]=v.split("|"); const t=tile();
+  Object.assign(t,{label,color,type,spec,icon:"",live:live||""});
   if(emoji) setIcon(makeEmojiIcon(emoji, +$("iconSize").value));
   renderTile(); renderDeck();
 };
@@ -659,7 +696,7 @@ $("btnIconDel").onclick=()=>{ const t=tile(); if(!t) return; t.icon=""; showIcon
 function toJson(){
   const p=S.cur, n=p.cols*p.rows;
   const tiles=p.tiles.filter(t=>t.slot>=0&&t.slot<n).sort((a,b)=>a.slot-b.slot)
-    .map(t=>{ const o={slot:t.slot,label:t.label,color:t.color,type:t.type,spec:t.spec}; if(t.icon) o.icon=t.icon; return o; });
+    .map(t=>{ const o={slot:t.slot,label:t.label,color:t.color,type:t.type,spec:t.spec}; if(t.icon) o.icon=t.icon; if(t.live) o.live=t.live; return o; });
   const bad=tiles.find(t=>t.type!=="none"&&!t.spec);
   if(bad) throw new Error("Die Kachel in Zeile "+(Math.floor(bad.slot/p.cols)+1)+", Spalte "+(bad.slot%p.cols+1)+" hat eine Aktion ohne Angabe.");
   return JSON.stringify({v:2,name:p.name,exe:p.exe,cols:p.cols,rows:p.rows,tiles});

@@ -2,6 +2,21 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v0.9.0 (2026-11-03)
+
+### Neu
+- **3-Finger-Rollen** in der 3D-Navigation: Drehung der drei Finger um ihren Mittelpunkt rollt die Ansicht. Blender: Tastenfolge (Strg+Shift+Ziffernblock 4/6, alle ca. 12 Grad). Fusion 360, Shapr3D und Bambu Studio haben kein Rollen per Maus; dort fährt die Maus eine Kreisbahn (wirkt nur im Modus „Freier Orbit“/Trackball)
+- **Streifen-Seiten** (neuer Kacheltyp `strip`): `scroll` (Mausrad), `hscroll` (waagerechtes Rad), `timeline` (Pfeiltasten Bild für Bild, 2 Finger = Shift), `zoom` (Strg + Rad). Empfindlichkeit und Richtung einstellbar, Bewegungsstriche als Rückmeldung. Dafür sendet die USB-Maus jetzt auch das waagerechte Rad, und es gibt `usbKeyTapAsync` (Taste antippen ohne zu blockieren)
+- **Display im Ruhezustand:** nach einstellbarer Zeit (15 s bis 1 Stunde, oder nie) auf 3 bis 50 % dimmen oder ganz ausschalten. Das erste Antippen weckt, wird aber verschluckt und löst keine Taste aus; ein ablaufender Timer weckt das Display. Einstellbar im Editor, neuer CDC-Befehl `IDLE`, `LIST` liefert `idle`; Speicherung in `config.json`
+- **Live-Werte auf Kacheln:** Tile-Feld `live` (`vol`, `mute`, `mic`, `cpu`, `ram`) zeigt den Wert des PCs unter der Beschriftung, die Kachel wird bei „stumm“ oder Last ab 90 % rot. Der Windows-Helfer misst (Core Audio für Lautstärke und Stumm, CPU, RAM) und meldet es einmal pro Sekunde mit `LIVE …`. Im Editor als Feld „Live-Wert vom PC“ und als Vorlagen
+- **Programmstart sofort:** ist der Helfer da, startet er `run`-Aktionen direkt, statt Win+R zu tippen (spart etwa eine Sekunde). Der Helfer versteht auch Programme mit Argumenten und Pfade mit Leerzeichen
+
+### Geändert
+- Neuer Helfer `JPDeck-Helper.exe` (Live-Werte, Programmstart). Alte Helfer funktionieren weiter, melden aber keine Live-Werte
+
+### Hinweis
+Alles Neue ist noch nicht am Gerät ausprobiert; das Auslesen von Lautstärke und Mikrofon im Helfer konnte nur kompiliert, nicht unter Windows ausgeführt werden.
+
 ## v0.8.0 (2026-11-02)
 
 ### Neu

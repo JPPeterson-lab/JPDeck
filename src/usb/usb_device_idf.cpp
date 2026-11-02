@@ -121,7 +121,7 @@ size_t DeckSerialIdf::print(const char* s)
 
 // ── Maus und gehaltene Modifier (nicht blockierend) ───────────────────────────
 // Der LVGL-Task legt Berichte nur in eine Warteschlange; ein eigener Task wartet auf den USB-Endpunkt und sendet sie der Reihe nach.
-struct HidMsg { uint8_t kind; uint8_t a; int8_t x, y, w; };      // kind 0 = Maus (a = Tasten), 1 = Tastatur-Modifier (a = Modifier)
+struct HidMsg { uint8_t kind; uint8_t a; int8_t x, y, w, h; };   // kind 0 = Maus (a = Tasten), 1 = Tastatur-Modifier (a = Modifier), 2 = Taste antippen (a = Modifier, x = Tastencode)
 static QueueHandle_t s_hidQ = nullptr;
 
 static void hidTask(void*)
@@ -133,8 +133,17 @@ static void hidTask(void*)
     int tries = 0;
     while (!tud_hid_ready() && tries++ < 50) vTaskDelay(1);        // Abfrageintervall 1 ms
     if (!tud_hid_ready()) continue;
-    if (m.kind == 0) tud_hid_mouse_report(REPORT_ID_MOUSE, m.a, m.x, m.y, m.w, 0);
-    else { uint8_t none[6] = {0}; tud_hid_keyboard_report(REPORT_ID_KEYBOARD, m.a, none); }
+    if (m.kind == 0) tud_hid_mouse_report(REPORT_ID_MOUSE, m.a, m.x, m.y, m.w, m.h);
+    else if (m.kind == 1) { uint8_t none[6] = {0}; tud_hid_keyboard_report(REPORT_ID_KEYBOARD, m.a, none); }
+    else {
+      uint8_t kc[6] = { (uint8_t)m.x, 0, 0, 0, 0, 0 };
+      tud_hid_keyboard_report(REPORT_ID_KEYBOARD, m.a, kc);
+      vTaskDelay(pdMS_TO_TICKS(12));                              // kurz halten, damit das Programm die Taste sicher sieht
+      tries = 0;
+      while (!tud_hid_ready() && tries++ < 50) vTaskDelay(1);
+      uint8_t none[6] = {0};
+      tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, none);
+    }
   }
 }
 
@@ -144,19 +153,26 @@ static void hidQueueStart()
   if (s_hidQ) xTaskCreatePinnedToCore(hidTask, "hid_out", 3072, nullptr, 5, nullptr, 0);
 }
 
-void usbMouseSend(uint8_t buttons, int8_t dx, int8_t dy, int8_t wheel)
+void usbMouseSend(uint8_t buttons, int8_t dx, int8_t dy, int8_t wheel, int8_t hwheel)
 {
   if (!s_hidQ) return;
-  const HidMsg m = { 0, buttons, dx, dy, wheel };
+  const HidMsg m = { 0, buttons, dx, dy, wheel, hwheel };
   // Bewegung darf bei voller Warteschlange verfallen, ein Tastenwechsel nicht
-  xQueueSend(s_hidQ, &m, (dx || dy || wheel) ? 0 : pdMS_TO_TICKS(20));
+  xQueueSend(s_hidQ, &m, (dx || dy || wheel || hwheel) ? 0 : pdMS_TO_TICKS(20));
 }
 
 void usbKeyboardMods(uint8_t mods)
 {
   if (!s_hidQ) return;
-  const HidMsg m = { 1, mods, 0, 0, 0 };
+  const HidMsg m = { 1, mods, 0, 0, 0, 0 };
   xQueueSend(s_hidQ, &m, pdMS_TO_TICKS(20));
+}
+
+void usbKeyTapAsync(uint8_t code, uint8_t mods)
+{
+  if (!s_hidQ) return;
+  const HidMsg m = { 2, mods, (int8_t)code, 0, 0, 0 };
+  xQueueSend(s_hidQ, &m, 0);
 }
 
 // ── Start ─────────────────────────────────────────────────────────────────────

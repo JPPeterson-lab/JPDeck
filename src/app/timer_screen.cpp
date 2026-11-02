@@ -10,6 +10,7 @@
 #include "../ui/fonts/fonts.h"
 #include "app_fonts.h"
 #include "../hardware/backlight.h"
+#include "power_idle.h"
 
 // ── Zustand (unabhängig vom Screen) ───────────────────────────────────────────
 enum TmState { TM_IDLE, TM_RUN, TM_PAUSE, TM_DONE };
@@ -44,6 +45,7 @@ static uint32_t    alT0    = 0;
 static void alarmStop() {
   if (alTimer) { lv_timer_del(alTimer); alTimer = nullptr; }
   if (alObj)   { lv_obj_del(alObj); alObj = alLabel = nullptr; }
+  idleSuppress(false);
   backlightSet(profilesBrightness());
   tmState = TM_IDLE;
   tmRemainMs = tmSetMs;
@@ -79,6 +81,7 @@ static void alarmStart() {
   alPhase = false;
   alT0 = millis();
   alTimer = lv_timer_create(alarmTick, 450, nullptr);
+  idleSuppress(true);                                            // Alarm weckt das Display und haelt es hell
   backlightSet(100);
 }
 

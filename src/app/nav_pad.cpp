@@ -27,18 +27,20 @@ enum { B_L = 1, B_R = 2, B_M = 4 };                    // Maustasten (HID-Bits)
 enum { M_CTRL = 1, M_SHIFT = 2, M_ALT = 4 };           // Modifier (HID-Bits)
 struct Bind { uint8_t btn, mod; };
 struct View { const char* label; const char* keys; };  // Taste fuer eine feste Ansicht (Tastenkuerzel wie in den Kacheln)
+struct Roll { uint8_t left, right, mod; };            // Rollen per Tastendruck (HID-Code links/rechts + Modifier); left == 0: kein Tastenpaar
 struct Preset {
-  const char* id; const char* name; Bind orbit, pan; const char* hint; View views[4];
+  const char* id; const char* name; Bind orbit, pan; const char* hint; View views[4]; Roll roll;
 };
 static const Preset PRESETS[] = {
   { "fusion",  "Fusion 360",   { B_M, M_SHIFT }, { B_M, 0 }, nullptr,
-    { { "Einpassen", "f6" }, { "Home", "home" }, { nullptr, nullptr }, { nullptr, nullptr } } },
+    { { "Einpassen", "f6" }, { "Home", "home" }, { nullptr, nullptr }, { nullptr, nullptr } }, { 0, 0, 0 } },
   { "shapr3d", "Shapr3D",      { B_R, 0 },       { B_M, 0 }, nullptr,
-    { { nullptr, nullptr }, { nullptr, nullptr }, { nullptr, nullptr }, { nullptr, nullptr } } },
+    { { nullptr, nullptr }, { nullptr, nullptr }, { nullptr, nullptr }, { nullptr, nullptr } }, { 0, 0, 0 } },
   { "bambu",   "Bambu Studio", { B_L, 0 },       { B_R, 0 }, "Mauszeiger auf eine freie Stelle legen: Drehen nutzt die linke Taste und verschiebt sonst ein Objekt.",
-    { { "Alles", "z" }, { "Iso", "0" }, { "Oben", "1" }, { "Vorne", "3" } } },
+    { { "Alles", "z" }, { "Iso", "0" }, { "Oben", "1" }, { "Vorne", "3" } }, { 0, 0, 0 } },
   { "blender", "Blender",      { B_M, 0 },       { B_M, M_SHIFT }, nullptr,
-    { { "Alles", "home" }, { nullptr, nullptr }, { nullptr, nullptr }, { nullptr, nullptr } } },
+    { { "Alles", "home" }, { nullptr, nullptr }, { nullptr, nullptr }, { nullptr, nullptr } },
+    { 0x5C, 0x5E, M_CTRL | M_SHIFT } },                // Blender: Ansicht rollen = Strg+Shift+Ziffernblock 4 / 6
 };
 static const int N_PRESETS = sizeof(PRESETS) / sizeof(PRESETS[0]);
 
@@ -65,6 +67,7 @@ struct Engine {
   float    remX = 0, remY = 0, zoomAcc = 0;    // noch nicht gesendete Bruchteile
   bool     pressed = false;
   uint8_t  buttons = 0, mods = 0;
+  float    rollPrev = 0, rollAcc = 0, phi = 0;  // 3 Finger: letzter Winkel, aufgelaufener Winkel bis zum naechsten Tastendruck, Winkel auf dem Kreis
 };
 static Engine E;
 
@@ -106,8 +109,15 @@ static int collect(const LvglTouchSnapshot& t, Pt* out)   // nur Finger auf der 
   return k;
 }
 
+static float fingerAngle(const Pt* p)               // Winkel des ersten Fingers um den Mittelpunkt aller drei
+{
+  const float cx = (p[0].x + p[1].x + p[2].x) / 3, cy = (p[0].y + p[1].y + p[2].y) / 3;
+  return atan2f(p[0].y - cy, p[0].x - cx);
+}
+
 static void capture(const Pt* p, int n)
 {
+  if (n == 3) { E.rollPrev = fingerAngle(p); E.rollAcc = 0; E.phi = 0; }
   if (n == 1) { E.orgX = E.baseX = p[0].x; E.orgY = E.baseY = p[0].y; E.orgDist = E.baseDist = 0; }
   else if (n == 2) {
     E.orgX = E.baseX = (p[0].x + p[1].x) / 2; E.orgY = E.baseY = (p[0].y + p[1].y) / 2;
@@ -172,6 +182,28 @@ static const char* gestureTick(const Pt* p, int n, float dt)
     sendMove(ix, iy, notches);
     return "Schwenken + Zoom";
   }
+  if (n == 3) {                                       // Rollen: Drehung der drei Finger um ihren Mittelpunkt
+    const float a = fingerAngle(p);
+    float da = a - E.rollPrev;
+    if (da > (float)M_PI) da -= 2 * (float)M_PI; else if (da < -(float)M_PI) da += 2 * (float)M_PI;
+    E.rollPrev = a;
+    if (P.roll.left) {                                // Programm mit Tastenpaar (Blender): alle 12 Grad ein Tastendruck
+      E.rollAcc += da * gain;
+      const float step = 0.21f;
+      while (E.rollAcc >= step)  { usbKeyTapAsync(P.roll.right, P.roll.mod); E.rollAcc -= step; }
+      while (E.rollAcc <= -step) { usbKeyTapAsync(P.roll.left,  P.roll.mod); E.rollAcc += step; }
+    } else {                                          // ohne Rollen im Programm: Mausbahn im Kreis (wirkt bei freiem Orbit/Trackball)
+      if (!E.pressed) { if (fabsf(da) < 0.004f) return "Rollen"; pressGesture(P.orbit); }
+      const float R = 180.0f * gain;
+      E.phi += da;
+      E.remX += -sinf(E.phi) * R * da;
+      E.remY +=  cosf(E.phi) * R * da;
+      int ix = (int)E.remX, iy = (int)E.remY;
+      E.remX -= ix; E.remY -= iy;
+      sendMove(ix, iy, 0);
+    }
+    return "Rollen";
+  }
   return "";
 }
 
@@ -202,7 +234,7 @@ static void refreshLabels()
     if (P.views[i].label) { lv_label_set_text(lv_obj_get_child(btnViews[i], 0), P.views[i].label); lv_obj_clear_flag(btnViews[i], LV_OBJ_FLAG_HIDDEN); }
     else lv_obj_add_flag(btnViews[i], LV_OBJ_FLAG_HIDDEN);
   }
-  lv_label_set_text(lblHint, P.hint ? P.hint : (ns.mode ? "Joystick: Finger auslenken, Absetzen beendet.\n1 Finger drehen, 2 Finger schwenken, Abstand = Zoom." : "1 Finger drehen\n2 Finger schwenken\nAbstand der Finger = Zoom"));
+  lv_label_set_text(lblHint, P.hint ? P.hint : (ns.mode ? "Joystick: Finger auslenken, Absetzen beendet.\n1 Finger drehen, 2 Finger schwenken, Abstand = Zoom, 3 Finger rollen." : "1 Finger drehen\n2 Finger schwenken\nAbstand der Finger = Zoom\n3 Finger drehen = Rollen"));
 }
 
 static void closeScreen()
@@ -283,12 +315,11 @@ static void tickCb(lv_timer_t*)
   if (n != E.n) {                                      // Fingerzahl gewechselt: neue Geste, neuer Nullpunkt
     releaseGesture();
     E.n = n; E.settle = 2;
-    capture(p, n < 3 ? n : 0);
-  } else if (n >= 1 && n <= 2) {
+    capture(p, n);
+  } else if (n >= 1 && n <= 3) {
     if (E.settle > 0) { E.settle--; capture(p, n); }   // die ersten Messungen nach dem Aufsetzen sind unruhig
     else what = gestureTick(p, n, dt);
   }
-  if (n >= 3) what = "3 Finger: frei";
 
   if (n != s_lastN || what[0]) {
     s_lastN = (uint8_t)n;

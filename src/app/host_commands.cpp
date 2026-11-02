@@ -8,6 +8,7 @@
 #include "lv_lock.h"
 #include "icons.h"
 #include "settings_extras.h"
+#include "live_state.h"
 #include "esp_heap_caps.h"
 #include "../display/lvgl_port.h"
 #include "../usb/usb_cdc.h"
@@ -81,6 +82,24 @@ static void cmdQuick(const char* a)
   usbCdcSendLine("OK");
 }
 
+// IDLE <sekunden> <helligkeit>   Display bei Inaktivitaet: Sekunden bis zum Abdunkeln (0 = nie), Helligkeit in Prozent (0 = ganz aus)
+static void cmdIdle(const char* a)
+{
+  int sec = -1, dim = -1;
+  if (!a || sscanf(a, "%d %d", &sec, &dim) != 2 || sec < 0 || sec > 7200 || dim < 0 || dim > 60) { err("Format: IDLE <sekunden 0-7200> <helligkeit 0-60>"); return; }
+  DeckIdleSettings s; s.sec = (uint16_t)sec; s.dim = (uint8_t)dim;
+  profilesSetIdle(s);
+  logDiag("[PC] Display-Ruhezustand: %d s, %d %%", sec, dim);
+  usbCdcSendLine("OK");
+}
+
+// LIVE vol=45 mute=0 mic=1 cpu=23 ram=61   Messwerte vom Helfer (einmal pro Sekunde), ohne Antwort
+static void cmdLive(const char* a)
+{
+  liveUpdate(a);
+  settingsExtrasHelperSeen();
+}
+
 // ACTIVE <programm.exe>   vom PC-Helfer: Vordergrund-Programm gemeldet (wird alle paar Sekunden wiederholt)
 static void cmdActive(const char* a)
 {
@@ -144,6 +163,8 @@ void hostCommandsInit()
   usbCdcRegister("DEL",    cmdDel);
   usbCdcRegister("USE",    cmdUse);
   usbCdcRegister("QUICK",  cmdQuick);
+  usbCdcRegister("IDLE",   cmdIdle);
+  usbCdcRegister("LIVE",   cmdLive);
   usbCdcRegister("TIME",   cmdTime);
   usbCdcRegister("ACTIVE",    cmdActive);
   usbCdcRegister("ICONBEGIN", cmdIconBegin);

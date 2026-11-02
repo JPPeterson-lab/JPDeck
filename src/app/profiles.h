@@ -12,6 +12,7 @@ struct DeckTile {
   DeckActionType type;
   char           spec[DECK_SPEC_MAX];
   char           icon[24];           // Icon-ID (Datei /icons/<id>.bin), leer = kein Icon
+  char           live[8];            // Live-Wert vom PC, der auf der Kachel erscheint (vol, mute, mic, cpu, ram), leer = keiner
   uint8_t        slot;               // Platz im Raster (0 = links oben, zeilenweise); Luecken zwischen den Kacheln sind erlaubt
 };
 
@@ -62,8 +63,18 @@ struct DeckNavSettings {
   uint8_t mode;        // 0 = Touchpad (Bewegung wird uebertragen), 1 = Joystick (Auslenkung = Geschwindigkeit)
   uint8_t sens;        // Empfindlichkeit in Zehnteln (5..40 = 0,5x..4,0x)
   uint8_t invZoom;     // 1 = Zoomrichtung umkehren
+  uint8_t stripSens;   // Empfindlichkeit der Streifen-Seiten in Zehnteln (5..40)
+  uint8_t stripInv;    // 1 = Richtung der Streifen-Seiten umkehren
 };
 DeckNavSettings profilesNav();
+
+// Display bei Inaktivitaet (siehe power_idle.cpp); geraeteweit, verzoegert gespeichert
+struct DeckIdleSettings {
+  uint16_t sec;        // nach so vielen Sekunden ohne Beruehrung abdunkeln, 0 = nie
+  uint8_t  dim;        // Helligkeit im Ruhezustand in Prozent (3..60), 0 = Display ganz aus bis zur naechsten Beruehrung
+};
+DeckIdleSettings profilesIdle();
+void profilesSetIdle(const DeckIdleSettings& s);
 void profilesSetNav(const DeckNavSettings& s);
 
 // Fuer den spaeteren Import ueber CDC/PC-Programm

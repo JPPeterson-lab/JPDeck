@@ -1,4 +1,5 @@
 #include "profiles.h"
+#include "live_state.h"
 #include "diag_log.h"
 #include <LittleFS.h>
 #include <ArduinoJson.h>
@@ -73,6 +74,8 @@ static bool fromJson(const char* id, JsonDocument& doc, DeckProfile& p)
     d.type  = deckActionTypeFromName(t["type"] | "none");
     strlcpy(d.spec, t["spec"] | "", sizeof(d.spec));
     strlcpy(d.icon, t["icon"] | "", sizeof(d.icon));
+    strlcpy(d.live, t["live"] | "", sizeof(d.live));
+    if (!liveMetricValid(d.live)) d.live[0] = 0;
     if (d.icon[0] && !idValid(d.icon)) d.icon[0] = 0;               // nur a-z 0-9 - _
     if (!deckActionValid(d.type, d.spec)) { d.type = ACT_NONE; d.spec[0] = 0; }   // kaputte Aktion nie ausfuehren
   }
@@ -97,6 +100,7 @@ static void toJson(const DeckProfile& p, JsonDocument& doc)
     o["spec"]  = t.spec;
     o["slot"]  = t.slot;
     if (t.icon[0]) o["icon"] = t.icon;
+    if (t.live[0]) o["live"] = t.live;
   }
 }
 
@@ -226,7 +230,8 @@ static uint8_t  s_brightness = DECK_BRIGHTNESS_DEFAULT;   // Helligkeit des Gera
 static bool     s_autoSwitch = false;
 static bool     s_hostActions = false;
 static char     s_quick[DECK_QUICK_COUNT][24] = {};   // Profil-IDs der Schnellwahl-Tasten P1..P5
-static DeckNavSettings s_nav = { 0, 0, 15, 0 };
+static DeckNavSettings s_nav = { 0, 0, 15, 0, 10, 0 };
+static DeckIdleSettings s_idle = { 0, 10 };
 static bool     s_cfgDirty = false;
 static uint32_t s_cfgT = 0;
 #define CFG_SAVE_DELAY_MS 8000
@@ -253,7 +258,9 @@ void profilesTick()
   JsonArray q = doc["quick"].to<JsonArray>();
   for (int i = 0; i < DECK_QUICK_COUNT; i++) q.add(s_quick[i]);
   JsonObject nv = doc["nav"].to<JsonObject>();
-  nv["preset"] = s_nav.preset; nv["mode"] = s_nav.mode; nv["sens"] = s_nav.sens; nv["invzoom"] = s_nav.invZoom;
+  JsonObject id = doc["idle"].to<JsonObject>();
+  id["sec"] = s_idle.sec; id["dim"] = s_idle.dim;
+  nv["preset"] = s_nav.preset; nv["mode"] = s_nav.mode; nv["sens"] = s_nav.sens; nv["invzoom"] = s_nav.invZoom; nv["ssens"] = s_nav.stripSens; nv["sinv"] = s_nav.stripInv;
   File f = LittleFS.open(DECK_CONFIG_FILE, "w");
   if (f) { serializeJson(doc, f); f.close(); }
   logDiag("[Flash] Auswahl '%s' geschrieben, %lu ms", s_list[s_active].id, (unsigned long)(millis() - t0));
@@ -303,10 +310,14 @@ bool profilesInit()
       if (haveBright) s_brightness = constrain((int)(doc["brightness"] | DECK_BRIGHTNESS_DEFAULT), DECK_BRIGHTNESS_MIN, 100);
       s_hostActions = doc["hostactions"] | false;
       for (int i = 0; i < DECK_QUICK_COUNT; i++) strlcpy(s_quick[i], doc["quick"][i] | "", sizeof(s_quick[i]));
+      s_idle.sec = constrain((int)(doc["idle"]["sec"] | 0), 0, 7200);
+      s_idle.dim = doc["idle"]["dim"].isNull() ? 10 : constrain((int)(doc["idle"]["dim"] | 0), 0, 60);
       s_nav.preset  = doc["nav"]["preset"] | 0;
       s_nav.mode    = (doc["nav"]["mode"] | 0) ? 1 : 0;
       s_nav.sens    = constrain((int)(doc["nav"]["sens"] | 15), 5, 40);
       s_nav.invZoom = (doc["nav"]["invzoom"] | 0) ? 1 : 0;
+      s_nav.stripSens = constrain((int)(doc["nav"]["ssens"] | 10), 5, 40);
+      s_nav.stripInv  = (doc["nav"]["sinv"] | 0) ? 1 : 0;
       const char* a = doc["active"] | "";
       for (int i = 0; i < s_count; i++) if (strcmp(s_list[i].id, a) == 0) s_active = i;
     }
@@ -324,11 +335,20 @@ bool profilesInit()
   return true;
 }
 
+DeckIdleSettings profilesIdle() { return s_idle; }
+void profilesSetIdle(const DeckIdleSettings& s)
+{
+  s_idle.sec = constrain((int)s.sec, 0, 7200);
+  s_idle.dim = s.dim == 0 ? 0 : constrain((int)s.dim, DECK_BRIGHTNESS_MIN, 60);
+  saveConfig();
+}
+
 DeckNavSettings profilesNav() { return s_nav; }
 void profilesSetNav(const DeckNavSettings& s)
 {
   s_nav = s;
   s_nav.sens = constrain((int)s_nav.sens, 5, 40);
+  s_nav.stripSens = constrain((int)s_nav.stripSens, 5, 40);
   saveConfig();
 }
 
@@ -391,6 +411,8 @@ void profileListJson(String& out)
   doc["active"] = s_count ? s_list[s_active].id : "";
   JsonArray q = doc["quick"].to<JsonArray>();
   for (int i = 0; i < DECK_QUICK_COUNT; i++) q.add(profileIndexOf(s_quick[i]) >= 0 ? s_quick[i] : "");
+  JsonObject idl = doc["idle"].to<JsonObject>();
+  idl["sec"] = s_idle.sec; idl["dim"] = s_idle.dim;
   JsonArray a = doc["profiles"].to<JsonArray>();
   for (int i = 0; i < s_count; i++) {
     JsonObject o = a.add<JsonObject>();

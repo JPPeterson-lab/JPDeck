@@ -7,6 +7,9 @@
 #include "deck_actions.h"
 #include "navigation.h"
 #include "nav_pad.h"
+#include "strip_pad.h"
+#include "power_idle.h"
+#include "live_state.h"
 #include "../ui/ui.h"
 #include "../ui/colors.h"
 #include "../ui/fonts/fonts.h"
@@ -73,9 +76,29 @@ static void cbTile(lv_event_t* e)
     int i = (int)(intptr_t)lv_event_get_user_data(e);
     if (i < 0 || i >= p.tileCount) return;
     const DeckTile& t = p.tiles[i];
-    if (t.type == ACT_NAV) return;                          // oeffnet erst beim Loslassen (cbTileNav), damit der Finger nicht schon die neue Seite bedient
+    if (t.type == ACT_NAV || t.type == ACT_STRIP) return;                          // oeffnet erst beim Loslassen (cbTileNav), damit der Finger nicht schon die neue Seite bedient
     logDiag("[Taste] %d '%s' -> %s %s", i, t.label, deckActionTypeName(t.type), t.spec);
     deckActionRun(t.type, t.spec);          // sofort beim Berühren, nicht erst beim Loslassen: fühlt sich direkter an
+}
+
+// ── Live-Werte auf Kacheln (vom Windows-Helfer) ───────────────────────────────
+static lv_obj_t* s_liveLbl[DECK_MAX_TILES];                 // Wert-Label je Kachel (nullptr: keine Live-Anzeige)
+static lv_obj_t* s_liveBtn[DECK_MAX_TILES];
+static int8_t    s_liveAlert[DECK_MAX_TILES];               // -1 unbekannt, 0 normal, 1 Warnfarbe
+
+static void liveRefresh()
+{
+    const DeckProfile& p = profileActive();
+    for (int i = 0; i < p.tileCount && i < DECK_MAX_TILES; i++) {
+        if (!s_liveLbl[i]) continue;
+        char txt[24]; bool alert = false;
+        liveFormat(p.tiles[i].live, txt, sizeof(txt), alert);
+        if (strcmp(lv_label_get_text(s_liveLbl[i]), txt) != 0) lv_label_set_text(s_liveLbl[i], txt);
+        if (s_liveAlert[i] != (int8_t)alert) {               // Warnung (stumm, hohe Last): Kachel wird rot
+            s_liveAlert[i] = (int8_t)alert;
+            lv_obj_set_style_bg_color(s_liveBtn[i], lv_color_hex(alert ? 0xc0392b : p.tiles[i].color), 0);
+        }
+    }
 }
 
 static void cbTileNav(lv_event_t* e)
@@ -83,15 +106,18 @@ static void cbTileNav(lv_event_t* e)
     const DeckProfile& p = profileActive();
     int i = (int)(intptr_t)lv_event_get_user_data(e);
     if (i < 0 || i >= p.tileCount) return;
-    logDiag("[Taste] %d '%s' -> 3D-Navigation %s", i, p.tiles[i].label, p.tiles[i].spec);
-    navPadOpen(p.tiles[i].spec);
+    logDiag("[Taste] %d '%s' -> Seite %s", i, p.tiles[i].label, p.tiles[i].spec);
+    if (p.tiles[i].type == ACT_STRIP) stripPadOpen(p.tiles[i].spec); else navPadOpen(p.tiles[i].spec);
 }
 
-static void buildGrid()
+static void buildGridImpl()
 {
     lv_obj_t* g = objects.containergrid;
     if (!g) return;
     lv_obj_clean(g);
+    memset(s_liveLbl, 0, sizeof(s_liveLbl));
+    memset(s_liveBtn, 0, sizeof(s_liveBtn));
+    for (auto& a : s_liveAlert) a = -1;
     freeIcons();                                            // erst nach dem Loeschen der Bilder, die darauf zeigten
 
     const DeckProfile& p = profileActive();
@@ -141,11 +167,19 @@ static void buildGrid()
                 lv_obj_set_width(l, tw - 12);
                 lv_label_set_text(l, t.label);
             }
+            if (t.live[0]) {                                        // Wert unter der Beschriftung
+                lv_obj_t* v = lv_label_create(b);
+                lv_obj_set_style_text_font(v, &font_montserrat_32, 0);
+                lv_label_set_text(v, "--");
+                s_liveLbl[i] = v; s_liveBtn[i] = b;
+            }
             lv_obj_add_event_cb(b, cbTile, LV_EVENT_PRESSED, (void*)(intptr_t)i);
-            if (t.type == ACT_NAV) lv_obj_add_event_cb(b, cbTileNav, LV_EVENT_CLICKED, (void*)(intptr_t)i);
+            if (t.type == ACT_NAV || t.type == ACT_STRIP) lv_obj_add_event_cb(b, cbTileNav, LV_EVENT_CLICKED, (void*)(intptr_t)i);
         }
     }
 }
+
+static void buildGrid() { buildGridImpl(); liveRefresh(); }          // nach jedem Neuaufbau gleich die aktuellen Live-Werte eintragen
 
 // ── Profil-Schnelltasten: Standard und P1..P5 ──────────────────────────────────
 // Sie liegen auf dem Deck-Bildschirm neben dem Kachelfeld und gelten damit fuer jedes Profil.
@@ -284,6 +318,8 @@ static void diagTickCb(lv_timer_t*)
 static void tickCb(lv_timer_t*)
 {
     settingsExtrasTick();
+    liveRefresh();
+    idleTick();                                             // Display abdunkeln, wenn lange nichts angetippt wurde
     profilesTick();                                         // verzoegertes Speichern der Profilauswahl
     // Nach einem Flash-Schreibzugriff ist die Display-Ansteuerung kurz ausgesetzt (der RGB-Treiber ist nicht IRAM-sicher).
     // Damit nichts Fehlerhaftes stehen bleibt, einmal alles neu zeichnen.

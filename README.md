@@ -1,7 +1,7 @@
 # 🎛️ JPDeck
 
 ![Status](https://img.shields.io/badge/Status-Beta-yellow?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.8.0-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v0.9.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-Waveshare%20ESP32--S3--Touch--LCD--7B-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-7%22%201024×600%20RGB-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-MIT-blue?style=flat-square)
@@ -11,7 +11,7 @@
 
 Das Projekt ist ein **ESP-IDF-Projekt** (Arduino-ESP32 läuft als Komponente für `Serial`, LittleFS und ArduinoJson), ohne WLAN und ohne OTA.
 
-> **🟡 Beta (v0.8.0):** Der Kern ist fertig und läuft am Gerät und am Windows-PC (Tastatur, Medientasten, COM-Port, Editor, Icons, freie Kachelplätze, Schnellwahl). Keine Bildstreifen beim Speichern, kein Flimmern. Noch nicht ausführlich getestet sind Rechner, Timer, der Windows-Helfer und der Helfer-Modus; Dateiformate und Befehle können sich bis zur 1.0 noch ändern. Fehler bitte als [Issue](https://github.com/JPPeterson-lab/JPDeck/issues) melden.
+> **🟡 Beta (v0.9.0):** Der Kern ist fertig und läuft am Gerät und am Windows-PC (Tastatur, Medientasten, COM-Port, Editor, Icons, freie Kachelplätze, Schnellwahl). Keine Bildstreifen beim Speichern, kein Flimmern. Noch nicht ausführlich getestet sind Rechner, Timer, der Windows-Helfer und der Helfer-Modus; Dateiformate und Befehle können sich bis zur 1.0 noch ändern. Fehler bitte als [Issue](https://github.com/JPPeterson-lab/JPDeck/issues) melden.
 
 ---
 
@@ -48,7 +48,10 @@ Weitere Befehle: `bash build.sh` (nur bauen), `bash build.sh clean`, Pixeltakt `
 | JPDeck Editor (Web Serial, Farben, Aktionen, Icons) | ✅ am Gerät geprüft |
 | Icons auf Kacheln (Emoji oder eigene Bilder) | ✅ am Gerät geprüft |
 | Programmstart (`run`) | ✅ geprüft |
-| **3D-Navigation** (Touch-Fläche wie eine Space Mouse: Drehen, Schwenken, Zoomen per Finger, Maus-Modus) | 🧪 neu in v0.8.0, ungetestet |
+| **3D-Navigation** (Touch-Fläche wie eine Space Mouse: Drehen, Schwenken, Zoomen per Finger, Maus-Modus) | ✅ v0.8.0 am Gerät ausprobiert |
+| **3D-Rollen** (3 Finger) und **Streifen-Seiten** (Scrollrad, Zeitleiste, Zoom) | 🧪 neu in v0.9.0, ungetestet |
+| **Display im Ruhezustand** (dimmen/aus, einstellbar im Editor, Antippen weckt) | 🧪 neu in v0.9.0, ungetestet |
+| **Live-Werte auf Kacheln** (Lautstärke, Mikrofon, CPU, RAM vom Helfer) und **schneller Programmstart** über den Helfer | 🧪 neu in v0.9.0, ungetestet |
 | Uhrzeit vom PC (setzt der Editor) | ✅ geprüft |
 | Taschenrechner, Küchentimer/Stoppuhr | 🧪 ungetestet |
 | Automatischer Profilwechsel (Schalter + Windows-Helfer) | 🧪 ungetestet |
@@ -113,12 +116,17 @@ Im Editor **„Symbol wählen“** (Emoji) oder **„Bild laden …“** (PNG, J
 ## 🧊 3D-Navigation (neu in v0.8.0)
 Eine Kachel vom Typ **3D-Navigation** öffnet eine leere Touch-Fläche, mit der Sie in CAD-Programmen die Ansicht bewegen, ähnlich einer Space Mouse: **1 Finger dreht**, **2 Finger schwenken**, **Auseinanderziehen zoomt**. Der erste Kontakt legt den Nullpunkt fest, die Fläche lässt sich also blind bedienen. Das JPDeck meldet sich dafür zusätzlich als **USB-Maus** und schickt Mausbewegung, Mausrad und gehaltene Tasten, so wie das Programm sie erwartet (Voreinstellungen für **Fusion 360, Shapr3D, Bambu Studio, Blender**). Kein Treiber nötig. Auf der Seite stellen Sie Modus (Touchpad oder Joystick), Empfindlichkeit und Zoomrichtung ein. Einzelheiten im [Wiki](https://github.com/JPPeterson-lab/JPDeck/wiki/3D-Navigation).
 
+## ✨ Neu in v0.9.0
+- **3 Finger rollen** die Ansicht in der 3D-Navigation (Blender per Tastenfolge, sonst Kreisbahn der Maus). **Streifen-Seiten** (neuer Kacheltyp `strip`): Scrollrad, waagerechtes Scrollen, Zeitleiste Bild für Bild, Zoom.
+- **Display-Ruhezustand:** nach einstellbarer Zeit abdunkeln oder ganz ausschalten, das erste Antippen weckt (löst keine Taste aus). Einstellung im Editor.
+- **Live-Werte auf Kacheln** (Lautstärke, Ton/Mikrofon stumm, CPU, RAM), gemeldet vom Windows-Helfer; **Programmstart sofort** über den Helfer. Einzelheiten im [Wiki](https://github.com/JPPeterson-lab/JPDeck/wiki/Live-Werte-und-Ruhezustand).
+
 ## 🔄 PC-Helfer (Windows)
 Ein kleines Windows-Programm: [`JPDeck-Helper.exe`](https://jppeterson-lab.github.io/JPDeck/JPDeck-Helper.exe) herunterladen und doppelklicken, nichts zu installieren (.NET Framework 4.8 ist in Windows 10/11 enthalten). Es zeigt ein Fenster mit Status und läuft danach als Symbol im Infobereich der Taskleiste. Windows warnt bei der ungesignierten Datei (SmartScreen): **Weitere Informationen → Trotzdem ausführen**. Es gibt den COM-Port frei, solange der Editor im Vordergrund ist. Zwei Aufgaben, beide in den Einstellungen des Geräts schaltbar:
 - **Automatischer Profilwechsel:** wählt das Profil nach dem Programm im Vordergrund (Feld „Programm“ im Profil, sonst „Standard“).
 - **Tasten am PC ausführen:** führt Tasten, Medientasten, Text und Programmstarts am PC aus, statt dass das Board als USB-Tastatur auftritt (Ausweichweg).
 
-Der Helfer läuft **nur, wenn Sie ihn starten**. Im Fenster gibt es zwei Optionen, beide standardmäßig aus: **Mit Windows starten (im Hintergrund)** und **Beenden, wenn das JPDeck getrennt wird**. Das Fenster zu schließen versteckt es nur, **Beenden** (Fenster oder Rechtsklick auf das Symbol) beendet den Helfer.
+Der Helfer meldet zusätzlich jede Sekunde Lautstärke, Stumm-Zustände, CPU- und RAM-Last für Kacheln mit Live-Anzeige. Er läuft **nur, wenn Sie ihn starten**. Im Fenster gibt es zwei Optionen, beide standardmäßig aus: **Mit Windows starten (im Hintergrund)** und **Beenden, wenn das JPDeck getrennt wird**. Das Fenster zu schließen versteckt es nur, **Beenden** (Fenster oder Rechtsklick auf das Symbol) beendet den Helfer.
 
 Der Helfer sendet nur den Namen des Vordergrundprogramms an das JPDeck und führt im zweiten Modus aus, was das angeschlossene JPDeck schickt: nur selbst eingesteckte Geräte verwenden.
 
@@ -184,7 +192,7 @@ Siehe [CREDITS.md](CREDITS.md). GUI: [LVGL](https://lvgl.io). Oberfläche: [Pico
 
 The project is an **ESP-IDF project** (Arduino-ESP32 runs as a component for `Serial`, LittleFS and ArduinoJson), with no Wi-Fi and no OTA.
 
-> **🟡 Beta (v0.8.0):** The core is finished and runs on the device and on the Windows PC (keyboard, media keys, COM port, editor, icons, free tile positions, quick select). No streaks when saving, no flicker. Calculator, timer, the Windows helper and helper mode are not yet thoroughly tested; file formats and commands may still change before 1.0. Please report bugs as an [issue](https://github.com/JPPeterson-lab/JPDeck/issues).
+> **🟡 Beta (v0.9.0):** The core is finished and runs on the device and on the Windows PC (keyboard, media keys, COM port, editor, icons, free tile positions, quick select). No streaks when saving, no flicker. Calculator, timer, the Windows helper and helper mode are not yet thoroughly tested; file formats and commands may still change before 1.0. Please report bugs as an [issue](https://github.com/JPPeterson-lab/JPDeck/issues).
 
 ## 🚀 Installation
 
@@ -262,12 +270,17 @@ In the editor **"Symbol wählen"** (emoji) or **"Bild laden …"** (PNG, JPG, SV
 ## 🧊 3D navigation (new in v0.8.0)
 A tile of type **3D-Navigation** opens an empty touch surface for moving the view in CAD programs, similar to a Space Mouse: **1 finger orbits**, **2 fingers pan**, **spreading zooms**. The first contact sets the zero point, so the surface can be used blind. For this the JPDeck also enumerates as a **USB mouse** and sends mouse movement, wheel and held keys the way the program expects (presets for **Fusion 360, Shapr3D, Bambu Studio, Blender**). No driver needed. On the page you set the mode (touchpad or joystick), sensitivity and zoom direction. Details in the [wiki](https://github.com/JPPeterson-lab/JPDeck/wiki/3D-Navigation).
 
+## ✨ New in v0.9.0
+- **3 fingers roll** the view in the 3D navigation (Blender via key sequence, otherwise a circular mouse path). **Strip pages** (new tile type `strip`): scroll wheel, horizontal scroll, frame-by-frame timeline, zoom.
+- **Display idle state:** dim or switch off after an adjustable time, the first touch wakes it (triggers no key). Set in the editor.
+- **Live values on tiles** (volume, sound/microphone muted, CPU, RAM) reported by the Windows helper; **instant program launch** through the helper. Details in the [wiki](https://github.com/JPPeterson-lab/JPDeck/wiki/Live-Werte-und-Ruhezustand).
+
 ## 🔄 PC helper (Windows)
 A small Windows program: download [`JPDeck-Helper.exe`](https://jppeterson-lab.github.io/JPDeck/JPDeck-Helper.exe) and double-click it, nothing to install (.NET Framework 4.8 ships with Windows 10/11). It shows a status window and then keeps running as a tray icon. Windows warns about the unsigned file (SmartScreen): **More info → Run anyway**. It releases the COM port while the editor is in the foreground. Two jobs, both switchable in the device's settings:
 - **Automatic profile switch:** picks the profile by the program in the foreground (profile field "Programm", otherwise "Standard").
 - **Run keys on the PC:** performs keys, media keys, text and program launches on the PC instead of the board acting as a USB keyboard (fallback).
 
-The helper **only runs when you start it**. The window has two options, both off by default: **Mit Windows starten (im Hintergrund)** (start with Windows, in the background) and **Beenden, wenn das JPDeck getrennt wird** (quit when the JPDeck is unplugged). Closing the window only hides it; **Beenden** (window or right-click on the tray icon) quits the helper.
+The helper also reports volume, mute states, CPU and RAM load every second for tiles with a live display. It **only runs when you start it**. The window has two options, both off by default: **Mit Windows starten (im Hintergrund)** (start with Windows, in the background) and **Beenden, wenn das JPDeck getrennt wird** (quit when the JPDeck is unplugged). Closing the window only hides it; **Beenden** (window or right-click on the tray icon) quits the helper.
 
 The helper only sends the name of the foreground program to the JPDeck and, in the second mode, executes what the connected JPDeck sends: only use devices you plugged in yourself.
 

@@ -6,3 +6,4 @@
 void backlightInit();               // einschalten (Helligkeit aus gespeichertem Wert folgt spaeter)
 void backlightSet(uint8_t percent); // 3..100 %; darunter geht das Display nie ganz aus
 uint8_t backlightGet();
+void backlightPower(bool on);       // Hintergrundbeleuchtung ganz aus/ein (Pin am IO-Expander), die Helligkeit bleibt gemerkt

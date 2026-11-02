@@ -52,6 +52,7 @@ namespace JPDeckHelper
             var fgTimer = Stopwatch.StartNew();
             var scanTimer = Stopwatch.StartNew();
             var sendTimer = Stopwatch.StartNew();
+            var liveTimer = Stopwatch.StartNew();
             string curExe = "", lastExe = "";
             bool editorOpen = false;
             string buf = "";
@@ -99,6 +100,12 @@ namespace JPDeckHelper
                                 port.WriteLine("ACTIVE " + curExe);
                                 lastExe = curExe;
                                 sendTimer.Restart();
+                            }
+                            // Messwerte fuer Kacheln mit Live-Anzeige (Lautstaerke, Mikrofon stumm, CPU, RAM), jede Sekunde
+                            if (liveTimer.ElapsedMilliseconds >= 1000)
+                            {
+                                liveTimer.Restart();
+                                port.WriteLine(Live.Line());
                             }
                             // Eingehende Zeilen vom Geraet: Aktionen ausfuehren, Antworten verwerfen
                             if (port.BytesToRead > 0)
@@ -208,6 +215,31 @@ namespace JPDeckHelper
             return list.Count > 0 ? list.ToArray() : null;
         }
 
+        /// <summary>
+        /// Startet wie der Windows-Dialog "Ausfuehren": ein Programmname, ein Pfad (auch mit Leerzeichen), ein Ordner,
+        /// eine Internetadresse, oder ein Programm mit Argumenten ("notepad datei.txt", "\"C:\\Pfad\\x.exe\" -a").
+        /// </summary>
+        private static void StartProgram(string spec)
+        {
+            spec = spec.Trim();
+            string file = spec, args = "";
+            bool whole = System.IO.File.Exists(spec) || System.IO.Directory.Exists(spec) || spec.IndexOf("://", StringComparison.Ordinal) > 0;
+            if (!whole)
+            {
+                if (spec.StartsWith("\""))
+                {
+                    int q = spec.IndexOf('"', 1);
+                    if (q > 0) { file = spec.Substring(1, q - 1); args = spec.Substring(q + 1).Trim(); }
+                }
+                else
+                {
+                    int sp = spec.IndexOf(' ');
+                    if (sp > 0) { file = spec.Substring(0, sp); args = spec.Substring(sp + 1).Trim(); }
+                }
+            }
+            Process.Start(new ProcessStartInfo(file, args) { UseShellExecute = true });
+        }
+
         private void HandleAction(string rest)
         {
             int sp = rest.IndexOf(' ');
@@ -229,7 +261,7 @@ namespace JPDeckHelper
                         Native.TypeText(spec);
                         break;
                     case "run":
-                        Process.Start(new ProcessStartInfo(spec) { UseShellExecute = true });
+                        StartProgram(spec);
                         break;
                     default:
                         return;

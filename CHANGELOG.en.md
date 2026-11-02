@@ -2,6 +2,21 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v0.9.0 (2026-11-03)
+
+### New
+- **3-finger roll** in the 3D navigation: rotating the three fingers around their centre rolls the view. Blender: key sequence (Ctrl+Shift+numpad 4/6, about every 12 degrees). Fusion 360, Shapr3D and Bambu Studio have no mouse roll; there the mouse moves on a circular path (only works in "Free Orbit"/trackball mode)
+- **Strip pages** (new tile type `strip`): `scroll` (mouse wheel), `hscroll` (horizontal wheel), `timeline` (arrow keys frame by frame, 2 fingers = Shift), `zoom` (Ctrl + wheel). Sensitivity and direction adjustable, moving lines as feedback. For this the USB mouse now also sends the horizontal wheel, and there is `usbKeyTapAsync` (tap a key without blocking)
+- **Display idle state:** after an adjustable time (15 s to 1 hour, or never) dim to 3 to 50 % or switch fully off. The first touch wakes but is swallowed and triggers no key; an expiring timer wakes the display. Adjustable in the editor, new CDC command `IDLE`, `LIST` returns `idle`; stored in `config.json`
+- **Live values on tiles:** tile field `live` (`vol`, `mute`, `mic`, `cpu`, `ram`) shows the PC value below the label, the tile turns red when muted or at 90 % load or more. The Windows helper measures (Core Audio for volume and mute, CPU, RAM) and reports it once per second with `LIVE …`. In the editor as the field "Live-Wert vom PC" and as templates
+- **Instant program launch:** while the helper is there it starts `run` actions directly instead of typing Win+R (saves about a second). The helper also understands programs with arguments and paths with spaces
+
+### Changed
+- New helper `JPDeck-Helper.exe` (live values, program launch). Old helpers keep working but report no live values
+
+### Note
+None of the new features has been tried on the device yet; reading volume and microphone in the helper could only be compiled, not run under Windows.
+
 ## v0.8.0 (2026-11-02)
 
 ### New
