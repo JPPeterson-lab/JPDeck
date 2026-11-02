@@ -1,7 +1,7 @@
 #pragma once
 // Zentrale Einstellungen des JPDeck. Alles, was man später mal anpassen will, steht hier.
 
-#define FIRMWARE_VERSION "0.7.0"
+#define FIRMWARE_VERSION "0.8.0"
 
 // ── USB-Geraet (so meldet sich das Board am Windows-PC an) ─────────────────────
 #define DECK_USB_MANUFACTURER "JPPeterson-lab"

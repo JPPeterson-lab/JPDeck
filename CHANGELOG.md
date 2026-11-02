@@ -2,6 +2,17 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v0.8.0 (2026-11-02)
+
+### Neu
+- **3D-Navigation (erste Version):** neuer Kacheltyp `nav`. Die Kachel öffnet eine leere Touch-Fläche, mit der man in CAD-Programmen die Ansicht bewegt, ähnlich einer Space Mouse: 1 Finger dreht, 2 Finger schwenken, Auseinanderziehen zoomt. Der erste Kontakt legt den Nullpunkt fest (blind bedienbar). Voreinstellungen für Fusion 360, Shapr3D, Bambu Studio und Blender (Maustasten, Shift, feste Ansichten). Zwei Modi: *Touchpad* (Bewegung wird übertragen) und *Joystick* (Auslenkung = Geschwindigkeit). Empfindlichkeit und Zoomrichtung einstellbar, geräteweit gespeichert (`nav` in `config.json`)
+- **USB-Maus:** das Gerät meldet zusätzlich eine HID-Maus (Report-ID 3). Berichte laufen über eine Warteschlange in einen eigenen Task, der LVGL-Task wartet nie auf USB
+- **Mehrfinger-Touch:** der Touch-Treiber liefert alle bis zu fünf Finger des GT911 (`lvglPortTouch`); auf der 3D-Seite wird er alle 10 ms statt alle 30 ms abgefragt
+- **Editor:** neue Aktion „3D-Navigation“ mit Programmauswahl und eine Vorlage
+
+### Hinweis
+Die Gesten sind noch nicht in echten CAD-Programmen abgestimmt, die Belegungen stammen aus der Dokumentation der Hersteller. Windows legt wegen der neuen Maus nach dem ersten Flashen einmal ein weiteres HID-Gerät an.
+
 ## v0.7.0 (2026-10-24)
 
 ### Geändert

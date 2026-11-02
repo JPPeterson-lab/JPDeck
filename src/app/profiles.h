@@ -56,6 +56,16 @@ void  profilesSetTheme(uint8_t theme);
 const char* profilesQuickId(int n);                // n = 0..4; "" wenn nicht belegt oder das Profil nicht (mehr) existiert
 void  profilesSetQuick(int n, const char* id);     // "" = frei; wird verzoegert gespeichert
 
+// Einstellungen der 3D-Navigation (Seite "nav_pad"): geraeteweit, werden verzoegert gespeichert
+struct DeckNavSettings {
+  uint8_t preset;      // Index des Programms (Fusion 360, Shapr3D, ...), siehe nav_pad.cpp
+  uint8_t mode;        // 0 = Touchpad (Bewegung wird uebertragen), 1 = Joystick (Auslenkung = Geschwindigkeit)
+  uint8_t sens;        // Empfindlichkeit in Zehnteln (5..40 = 0,5x..4,0x)
+  uint8_t invZoom;     // 1 = Zoomrichtung umkehren
+};
+DeckNavSettings profilesNav();
+void profilesSetNav(const DeckNavSettings& s);
+
 // Fuer den spaeteren Import ueber CDC/PC-Programm
 bool  profileLoad(const char* id, DeckProfile& out);
 bool  profileSave(const DeckProfile& p);

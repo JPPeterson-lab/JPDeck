@@ -2,6 +2,17 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v0.8.0 (2026-11-02)
+
+### New
+- **3D navigation (first version):** new tile type `nav`. The tile opens an empty touch surface for moving the view in CAD programs, similar to a Space Mouse: 1 finger orbits, 2 fingers pan, spreading zooms. The first contact sets the zero point (usable blind). Presets for Fusion 360, Shapr3D, Bambu Studio and Blender (mouse buttons, Shift, fixed views). Two modes: *Touchpad* (movement is transferred) and *Joystick* (deflection = speed). Sensitivity and zoom direction adjustable, stored device-wide (`nav` in `config.json`)
+- **USB mouse:** the device now also enumerates an HID mouse (report id 3). Reports go through a queue into a separate task, the LVGL task never waits for USB
+- **Multi-finger touch:** the touch driver provides all up to five fingers of the GT911 (`lvglPortTouch`); on the 3D page it is polled every 10 ms instead of every 30 ms
+- **Editor:** new action "3D-Navigation" with program selection and a template
+
+### Note
+The gestures are not yet tuned in real CAD programs, the mappings come from vendor documentation. Because of the new mouse, Windows adds one more HID device after the first flash.
+
 ## v0.7.0 (2026-10-24)
 
 ### Changed

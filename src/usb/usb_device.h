@@ -30,3 +30,11 @@ void usbConsumerTap(uint16_t usage);
 
 // Text tippen (ASCII, Tastaturlayout des PCs)
 void usbTypeText(const char* text);
+
+// Maus und gehaltene Modifier fuer die 3D-Navigation. Nicht blockierend: die Berichte laufen ueber eine Warteschlange
+// in einen eigenen Task und duerfen darum aus dem LVGL-Task gesendet werden.
+//   buttons: Bit0 links, Bit1 rechts, Bit2 mitte (gilt bis zum naechsten Aufruf, 0 = alle loslassen)
+//   dx, dy:  relative Bewegung; wheel: Mausrad-Rasten (positiv = von sich weg)
+void usbMouseSend(uint8_t buttons, int8_t dx, int8_t dy, int8_t wheel);
+//   mods: Bit0 Strg, Bit1 Shift, Bit2 Alt, Bit3 Windows; wird gehalten, bis ein neuer Wert (z. B. 0) kommt
+void usbKeyboardMods(uint8_t mods);

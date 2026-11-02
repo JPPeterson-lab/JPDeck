@@ -6,6 +6,7 @@
 #include "profiles.h"
 #include "deck_actions.h"
 #include "navigation.h"
+#include "nav_pad.h"
 #include "../ui/ui.h"
 #include "../ui/colors.h"
 #include "../ui/fonts/fonts.h"
@@ -72,8 +73,18 @@ static void cbTile(lv_event_t* e)
     int i = (int)(intptr_t)lv_event_get_user_data(e);
     if (i < 0 || i >= p.tileCount) return;
     const DeckTile& t = p.tiles[i];
+    if (t.type == ACT_NAV) return;                          // oeffnet erst beim Loslassen (cbTileNav), damit der Finger nicht schon die neue Seite bedient
     logDiag("[Taste] %d '%s' -> %s %s", i, t.label, deckActionTypeName(t.type), t.spec);
     deckActionRun(t.type, t.spec);          // sofort beim Berühren, nicht erst beim Loslassen: fühlt sich direkter an
+}
+
+static void cbTileNav(lv_event_t* e)
+{
+    const DeckProfile& p = profileActive();
+    int i = (int)(intptr_t)lv_event_get_user_data(e);
+    if (i < 0 || i >= p.tileCount) return;
+    logDiag("[Taste] %d '%s' -> 3D-Navigation %s", i, p.tiles[i].label, p.tiles[i].spec);
+    navPadOpen(p.tiles[i].spec);
 }
 
 static void buildGrid()
@@ -131,6 +142,7 @@ static void buildGrid()
                 lv_label_set_text(l, t.label);
             }
             lv_obj_add_event_cb(b, cbTile, LV_EVENT_PRESSED, (void*)(intptr_t)i);
+            if (t.type == ACT_NAV) lv_obj_add_event_cb(b, cbTileNav, LV_EVENT_CLICKED, (void*)(intptr_t)i);
         }
     }
 }

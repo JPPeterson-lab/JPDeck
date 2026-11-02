@@ -32,10 +32,12 @@ enum { ITF_NUM_CDC = 0, ITF_NUM_CDC_DATA, ITF_NUM_HID, ITF_NUM_TOTAL };
 #define EPNUM_HID       0x83
 #define REPORT_ID_KEYBOARD 1
 #define REPORT_ID_CONSUMER 2
+#define REPORT_ID_MOUSE    3
 
 static const uint8_t s_hidReport[] = {
   TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(REPORT_ID_KEYBOARD)),
   TUD_HID_REPORT_DESC_CONSUMER(HID_REPORT_ID(REPORT_ID_CONSUMER)),
+  TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(REPORT_ID_MOUSE)),          // 3D-Navigation: Maus mit Rad
 };
 
 #define CFG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_HID_DESC_LEN)
@@ -117,6 +119,46 @@ size_t DeckSerialIdf::print(const char* s)
   return sent;
 }
 
+// ── Maus und gehaltene Modifier (nicht blockierend) ───────────────────────────
+// Der LVGL-Task legt Berichte nur in eine Warteschlange; ein eigener Task wartet auf den USB-Endpunkt und sendet sie der Reihe nach.
+struct HidMsg { uint8_t kind; uint8_t a; int8_t x, y, w; };      // kind 0 = Maus (a = Tasten), 1 = Tastatur-Modifier (a = Modifier)
+static QueueHandle_t s_hidQ = nullptr;
+
+static void hidTask(void*)
+{
+  HidMsg m;
+  for (;;) {
+    if (xQueueReceive(s_hidQ, &m, portMAX_DELAY) != pdTRUE) continue;
+    if (!tud_mounted()) continue;                                 // PC nicht bereit: verwerfen statt anstauen
+    int tries = 0;
+    while (!tud_hid_ready() && tries++ < 50) vTaskDelay(1);        // Abfrageintervall 1 ms
+    if (!tud_hid_ready()) continue;
+    if (m.kind == 0) tud_hid_mouse_report(REPORT_ID_MOUSE, m.a, m.x, m.y, m.w, 0);
+    else { uint8_t none[6] = {0}; tud_hid_keyboard_report(REPORT_ID_KEYBOARD, m.a, none); }
+  }
+}
+
+static void hidQueueStart()
+{
+  s_hidQ = xQueueCreate(48, sizeof(HidMsg));
+  if (s_hidQ) xTaskCreatePinnedToCore(hidTask, "hid_out", 3072, nullptr, 5, nullptr, 0);
+}
+
+void usbMouseSend(uint8_t buttons, int8_t dx, int8_t dy, int8_t wheel)
+{
+  if (!s_hidQ) return;
+  const HidMsg m = { 0, buttons, dx, dy, wheel };
+  // Bewegung darf bei voller Warteschlange verfallen, ein Tastenwechsel nicht
+  xQueueSend(s_hidQ, &m, (dx || dy || wheel) ? 0 : pdMS_TO_TICKS(20));
+}
+
+void usbKeyboardMods(uint8_t mods)
+{
+  if (!s_hidQ) return;
+  const HidMsg m = { 1, mods, 0, 0, 0 };
+  xQueueSend(s_hidQ, &m, pdMS_TO_TICKS(20));
+}
+
 // ── Start ─────────────────────────────────────────────────────────────────────
 void usbDeviceInit()
 {
@@ -139,7 +181,8 @@ void usbDeviceInit()
   acm.callback_rx = cdcRx;
   acm.callback_line_state_changed = cdcLine;
   err = tinyusb_cdcacm_init(&acm);
-  logDiag(err == ESP_OK ? "[USB] HID-Tastatur + Consumer + CDC gestartet" : "[USB] CDC-Start FEHLER %d", (int)err);
+  logDiag(err == ESP_OK ? "[USB] HID-Tastatur + Consumer + Maus + CDC gestartet" : "[USB] CDC-Start FEHLER %d", (int)err);
+  hidQueueStart();
 }
 
 bool usbHostConnected() { return s_hostUp; }

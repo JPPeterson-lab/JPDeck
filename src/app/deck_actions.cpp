@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include "../usb/usb_device.h"
 #include "../usb/usb_cdc.h"
+#include "nav_pad.h"
 // HID-Verbrauchercodes (Consumer Page), dieselben Werte wie in USBHIDConsumerControl.h
 #define CONSUMER_CONTROL_VOLUME_INCREMENT 0x00E9
 #define CONSUMER_CONTROL_VOLUME_DECREMENT 0x00EA
@@ -91,7 +92,7 @@ static uint8_t parseKeys(const char* spec, uint16_t* out, uint8_t maxN)
 }
 
 // ── Namen <-> Typ ─────────────────────────────────────────────────────────────
-static const char* const TYPE_NAMES[] = { "none", "media", "keys", "text", "host", "run" };
+static const char* const TYPE_NAMES[] = { "none", "media", "keys", "text", "host", "run", "nav" };
 
 const char* deckActionTypeName(DeckActionType t) { return t <= ACT_LAST ? TYPE_NAMES[t] : "none"; }
 
@@ -111,6 +112,7 @@ bool deckActionValid(DeckActionType type, const char* spec)
     case ACT_TEXT:
     case ACT_HOST:
     case ACT_RUN:   return spec && *spec;
+    case ACT_NAV:   return navPadPresetValid(spec);
   }
   return false;
 }
@@ -187,7 +189,7 @@ void deckActionsInit()
 
 bool deckActionRun(DeckActionType type, const char* spec)
 {
-  if (type == ACT_NONE || !s_queue) return true;
+  if (type == ACT_NONE || type == ACT_NAV || !s_queue) return true;   // ACT_NAV oeffnet die UI selbst (deck_ui.cpp), nichts an den PC
   Job j;
   j.type = type;
   j.tEnq = esp_timer_get_time();

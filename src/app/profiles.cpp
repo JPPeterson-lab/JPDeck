@@ -226,6 +226,7 @@ static uint8_t  s_brightness = DECK_BRIGHTNESS_DEFAULT;   // Helligkeit des Gera
 static bool     s_autoSwitch = false;
 static bool     s_hostActions = false;
 static char     s_quick[DECK_QUICK_COUNT][24] = {};   // Profil-IDs der Schnellwahl-Tasten P1..P5
+static DeckNavSettings s_nav = { 0, 0, 15, 0 };
 static bool     s_cfgDirty = false;
 static uint32_t s_cfgT = 0;
 #define CFG_SAVE_DELAY_MS 8000
@@ -251,6 +252,8 @@ void profilesTick()
   doc["hostactions"] = s_hostActions;
   JsonArray q = doc["quick"].to<JsonArray>();
   for (int i = 0; i < DECK_QUICK_COUNT; i++) q.add(s_quick[i]);
+  JsonObject nv = doc["nav"].to<JsonObject>();
+  nv["preset"] = s_nav.preset; nv["mode"] = s_nav.mode; nv["sens"] = s_nav.sens; nv["invzoom"] = s_nav.invZoom;
   File f = LittleFS.open(DECK_CONFIG_FILE, "w");
   if (f) { serializeJson(doc, f); f.close(); }
   logDiag("[Flash] Auswahl '%s' geschrieben, %lu ms", s_list[s_active].id, (unsigned long)(millis() - t0));
@@ -300,6 +303,10 @@ bool profilesInit()
       if (haveBright) s_brightness = constrain((int)(doc["brightness"] | DECK_BRIGHTNESS_DEFAULT), DECK_BRIGHTNESS_MIN, 100);
       s_hostActions = doc["hostactions"] | false;
       for (int i = 0; i < DECK_QUICK_COUNT; i++) strlcpy(s_quick[i], doc["quick"][i] | "", sizeof(s_quick[i]));
+      s_nav.preset  = doc["nav"]["preset"] | 0;
+      s_nav.mode    = (doc["nav"]["mode"] | 0) ? 1 : 0;
+      s_nav.sens    = constrain((int)(doc["nav"]["sens"] | 15), 5, 40);
+      s_nav.invZoom = (doc["nav"]["invzoom"] | 0) ? 1 : 0;
       const char* a = doc["active"] | "";
       for (int i = 0; i < s_count; i++) if (strcmp(s_list[i].id, a) == 0) s_active = i;
     }
@@ -315,6 +322,14 @@ bool profilesInit()
   if (!haveBright) s_brightness = s_cur.brightness;
   logDiag("[Profile] %d Profile, aktiv: %s", s_count, s_cur.name);
   return true;
+}
+
+DeckNavSettings profilesNav() { return s_nav; }
+void profilesSetNav(const DeckNavSettings& s)
+{
+  s_nav = s;
+  s_nav.sens = constrain((int)s_nav.sens, 5, 40);
+  saveConfig();
 }
 
 const char* profilesQuickId(int n)

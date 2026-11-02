@@ -1,7 +1,7 @@
 # 🎛️ JPDeck
 
 ![Status](https://img.shields.io/badge/Status-Beta-yellow?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.7.0-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v0.8.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-Waveshare%20ESP32--S3--Touch--LCD--7B-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-7%22%201024×600%20RGB-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-MIT-blue?style=flat-square)
@@ -11,7 +11,7 @@
 
 Das Projekt ist ein **ESP-IDF-Projekt** (Arduino-ESP32 läuft als Komponente für `Serial`, LittleFS und ArduinoJson), ohne WLAN und ohne OTA.
 
-> **🟡 Beta (v0.7.0):** Der Kern ist fertig und läuft am Gerät und am Windows-PC (Tastatur, Medientasten, COM-Port, Editor, Icons, freie Kachelplätze, Schnellwahl). Keine Bildstreifen beim Speichern, kein Flimmern. Noch nicht ausführlich getestet sind Rechner, Timer, der Windows-Helfer und der Helfer-Modus; Dateiformate und Befehle können sich bis zur 1.0 noch ändern. Fehler bitte als [Issue](https://github.com/JPPeterson-lab/JPDeck/issues) melden.
+> **🟡 Beta (v0.8.0):** Der Kern ist fertig und läuft am Gerät und am Windows-PC (Tastatur, Medientasten, COM-Port, Editor, Icons, freie Kachelplätze, Schnellwahl). Keine Bildstreifen beim Speichern, kein Flimmern. Noch nicht ausführlich getestet sind Rechner, Timer, der Windows-Helfer und der Helfer-Modus; Dateiformate und Befehle können sich bis zur 1.0 noch ändern. Fehler bitte als [Issue](https://github.com/JPPeterson-lab/JPDeck/issues) melden.
 
 ---
 
@@ -48,6 +48,7 @@ Weitere Befehle: `bash build.sh` (nur bauen), `bash build.sh clean`, Pixeltakt `
 | JPDeck Editor (Web Serial, Farben, Aktionen, Icons) | ✅ am Gerät geprüft |
 | Icons auf Kacheln (Emoji oder eigene Bilder) | ✅ am Gerät geprüft |
 | Programmstart (`run`) | ✅ geprüft |
+| **3D-Navigation** (Touch-Fläche wie eine Space Mouse: Drehen, Schwenken, Zoomen per Finger, Maus-Modus) | 🧪 neu in v0.8.0, ungetestet |
 | Uhrzeit vom PC (setzt der Editor) | ✅ geprüft |
 | Taschenrechner, Küchentimer/Stoppuhr | 🧪 ungetestet |
 | Automatischer Profilwechsel (Schalter + Windows-Helfer) | 🧪 ungetestet |
@@ -108,6 +109,9 @@ Der Editor setzt beim Verbinden die **Uhrzeit** des PCs und zeigt Status und Ger
 Im Editor **„Symbol wählen“** (Emoji) oder **„Bild laden …“** (PNG, JPG, SVG), Größe 32–80 px (mit Text darunter besser 48 px oder kleiner). Beim Speichern lädt der Editor neue Icons ins Gerät (bis 96 × 96 px, gemeinsam für alle Profile).
 
 ---
+
+## 🧊 3D-Navigation (neu in v0.8.0)
+Eine Kachel vom Typ **3D-Navigation** öffnet eine leere Touch-Fläche, mit der Sie in CAD-Programmen die Ansicht bewegen, ähnlich einer Space Mouse: **1 Finger dreht**, **2 Finger schwenken**, **Auseinanderziehen zoomt**. Der erste Kontakt legt den Nullpunkt fest, die Fläche lässt sich also blind bedienen. Das JPDeck meldet sich dafür zusätzlich als **USB-Maus** und schickt Mausbewegung, Mausrad und gehaltene Tasten, so wie das Programm sie erwartet (Voreinstellungen für **Fusion 360, Shapr3D, Bambu Studio, Blender**). Kein Treiber nötig. Auf der Seite stellen Sie Modus (Touchpad oder Joystick), Empfindlichkeit und Zoomrichtung ein. Einzelheiten im [Wiki](https://github.com/JPPeterson-lab/JPDeck/wiki/3D-Navigation).
 
 ## 🔄 PC-Helfer (Windows)
 Ein kleines Windows-Programm: [`JPDeck-Helper.exe`](https://jppeterson-lab.github.io/JPDeck/JPDeck-Helper.exe) herunterladen und doppelklicken, nichts zu installieren (.NET Framework 4.8 ist in Windows 10/11 enthalten). Es zeigt ein Fenster mit Status und läuft danach als Symbol im Infobereich der Taskleiste. Windows warnt bei der ungesignierten Datei (SmartScreen): **Weitere Informationen → Trotzdem ausführen**. Es gibt den COM-Port frei, solange der Editor im Vordergrund ist. Zwei Aufgaben, beide in den Einstellungen des Geräts schaltbar:
@@ -180,7 +184,7 @@ Siehe [CREDITS.md](CREDITS.md). GUI: [LVGL](https://lvgl.io). Oberfläche: [Pico
 
 The project is an **ESP-IDF project** (Arduino-ESP32 runs as a component for `Serial`, LittleFS and ArduinoJson), with no Wi-Fi and no OTA.
 
-> **🟡 Beta (v0.7.0):** The core is finished and runs on the device and on the Windows PC (keyboard, media keys, COM port, editor, icons, free tile positions, quick select). No streaks when saving, no flicker. Calculator, timer, the Windows helper and helper mode are not yet thoroughly tested; file formats and commands may still change before 1.0. Please report bugs as an [issue](https://github.com/JPPeterson-lab/JPDeck/issues).
+> **🟡 Beta (v0.8.0):** The core is finished and runs on the device and on the Windows PC (keyboard, media keys, COM port, editor, icons, free tile positions, quick select). No streaks when saving, no flicker. Calculator, timer, the Windows helper and helper mode are not yet thoroughly tested; file formats and commands may still change before 1.0. Please report bugs as an [issue](https://github.com/JPPeterson-lab/JPDeck/issues).
 
 ## 🚀 Installation
 
@@ -254,6 +258,9 @@ On connect the editor also sets the PC's **time** and shows status and device lo
 
 ### Icons on tiles
 In the editor **"Symbol wählen"** (emoji) or **"Bild laden …"** (PNG, JPG, SVG), size 32–80 px (with text underneath prefer 48 px or smaller). On save the editor loads new icons onto the device (up to 96 × 96 px, shared by all profiles).
+
+## 🧊 3D navigation (new in v0.8.0)
+A tile of type **3D-Navigation** opens an empty touch surface for moving the view in CAD programs, similar to a Space Mouse: **1 finger orbits**, **2 fingers pan**, **spreading zooms**. The first contact sets the zero point, so the surface can be used blind. For this the JPDeck also enumerates as a **USB mouse** and sends mouse movement, wheel and held keys the way the program expects (presets for **Fusion 360, Shapr3D, Bambu Studio, Blender**). No driver needed. On the page you set the mode (touchpad or joystick), sensitivity and zoom direction. Details in the [wiki](https://github.com/JPPeterson-lab/JPDeck/wiki/3D-Navigation).
 
 ## 🔄 PC helper (Windows)
 A small Windows program: download [`JPDeck-Helper.exe`](https://jppeterson-lab.github.io/JPDeck/JPDeck-Helper.exe) and double-click it, nothing to install (.NET Framework 4.8 ships with Windows 10/11). It shows a status window and then keeps running as a tray icon. Windows warns about the unsigned file (SmartScreen): **More info → Run anyway**. It releases the COM port while the editor is in the foreground. Two jobs, both switchable in the device's settings:

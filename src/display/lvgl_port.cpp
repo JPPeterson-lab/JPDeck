@@ -95,18 +95,31 @@ static void rounder_cb(lv_disp_drv_t *, lv_area_t *area)
     if (area->x2 >= LVGL_PORT_H_RES) area->x2 = LVGL_PORT_H_RES - 1;
 }
 
+static LvglTouchSnapshot s_touch = {0, {0}, {0}};
+void lvglPortTouch(LvglTouchSnapshot& out) { out = s_touch; }
+
+void lvglPortSetTouchPeriod(uint32_t ms)
+{
+    lv_indev_t *in = lv_indev_get_next(NULL);
+    if (in && in->driver && in->driver->read_timer)
+        lv_timer_set_period(in->driver->read_timer, ms ? ms : LV_INDEV_DEF_READ_PERIOD);
+}
+
 static void touchpad_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     esp_lcd_touch_handle_t tp = (esp_lcd_touch_handle_t)drv->user_data;
-    uint16_t x, y;
+    uint16_t x[5], y[5];
     uint8_t cnt = 0;
     esp_lcd_touch_read_data(tp);
-    if (esp_lcd_touch_get_coordinates(tp, &x, &y, NULL, &cnt, 1) && cnt > 0) {
-        data->point.x = x;
-        data->point.y = y;
+    if (esp_lcd_touch_get_coordinates(tp, x, y, NULL, &cnt, 5) && cnt > 0) {
+        data->point.x = x[0];                                     // LVGL bedient nur den ersten Finger
+        data->point.y = y[0];
         data->state = LV_INDEV_STATE_PRESSED;
+        s_touch.n = cnt > 5 ? 5 : cnt;
+        for (uint8_t i = 0; i < s_touch.n; i++) { s_touch.x[i] = x[i]; s_touch.y[i] = y[i]; }
     } else {
         data->state = LV_INDEV_STATE_RELEASED;
+        s_touch.n = 0;
     }
 }
 

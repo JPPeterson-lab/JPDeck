@@ -44,6 +44,12 @@ struct LvglFlushStats { uint32_t count, sumUs, maxUs, maxPx, loopMaxUs; };   // 
 void lvglPortPeekFlushStats(LvglFlushStats& out);   // lesen
 void lvglPortTakeFlushStats(LvglFlushStats& out);   // lesen und zuruecksetzen (nur aus dem LVGL-Task)
 
+// Alle Finger auf dem Display (GT911: bis zu 5). LVGL selbst bekommt nur den ersten; die 3D-Navigation wertet alle aus.
+// Wird bei jedem Lesen des Touch-Controllers aktualisiert (nur im LVGL-Task lesen).
+struct LvglTouchSnapshot { uint8_t n; uint16_t x[5], y[5]; };
+void lvglPortTouch(LvglTouchSnapshot& out);
+void lvglPortSetTouchPeriod(uint32_t ms);           // Abfrageintervall des Touch-Controllers (0 = Standard von LVGL)
+
 // Ausreisser: ein einzelner Flush, der laenger als LVGL_PORT_SLOW_FLUSH_US dauert (Verdacht: PSRAM oder Cache blockiert)
 #define LVGL_PORT_SLOW_FLUSH_US 20000
 struct LvglSlowFlush { uint32_t n, maxUs, px; int x, y, w, h; };

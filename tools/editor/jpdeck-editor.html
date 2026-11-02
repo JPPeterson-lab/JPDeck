@@ -157,6 +157,7 @@ label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
           <option value="keys">Tastenkombination</option>
           <option value="run">Programm, Datei oder Link starten</option>
           <option value="text">Text tippen</option>
+          <option value="nav">3D-Navigation (Touch-Fläche wie eine Space Mouse)</option>
           <option value="host">Nachricht an PC-Programm (für später)</option>
         </select>
         <div id="aMedia" class="hidden"><label for="tMedia">Taste</label><select id="tMedia"></select></div>
@@ -173,6 +174,11 @@ label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
           <p class="hint">Das Gerät drückt Win+R, tippt den Text und bestätigt mit Enter – es gilt alles, was der Windows-Dialog „Ausführen“ versteht (Programmname, vollständiger Pfad, Ordner, Internetadresse).</p>
         </div>
         <div id="aText" class="hidden"><label for="tText">Text</label><input id="tText" maxlength="95"></div>
+        <div id="aNav" class="hidden">
+          <label for="tNav">Programm</label>
+          <select id="tNav"><option value="fusion">Fusion 360</option><option value="shapr3d">Shapr3D</option><option value="bambu">Bambu Studio</option><option value="blender">Blender</option></select>
+          <p class="hint">Die Kachel öffnet auf dem JPDeck eine leere Touch-Fläche: 1 Finger dreht die Ansicht, 2 Finger schwenken, Auseinanderziehen zoomt. Das JPDeck sendet dafür Mausbewegungen und das Mausrad an den PC, passend zum gewählten Programm. Modus (Touchpad/Joystick), Empfindlichkeit und Zoomrichtung stellt man auf der Seite selbst ein.</p>
+        </div>
         <div id="aHost" class="hidden"><label for="tHost">Nachricht</label><input id="tHost" maxlength="95"><p class="hint">Wird als „ACTION …“ über den COM-Port gesendet.</p></div>
         <div class="row" style="margin-top:12px"><button id="btnTileClear" class="danger">Kachel entfernen</button></div>
       </div>
@@ -204,6 +210,7 @@ const PRESETS = [
   ["Play\nPause|#d35400|media|play_pause|⏯️","Play / Pause"],["Weiter|#16a085|media|next|⏭️","Nächster Titel"],["Zurück|#16a085|media|prev|⏮️","Vorheriger Titel"],
   ["Kopieren|#2980b9|keys|ctrl+c|📋","Kopieren (Strg+C)"],["Einfügen|#2980b9|keys|ctrl+v|📌","Einfügen (Strg+V)"],["Rückgängig|#8e44ad|keys|ctrl+z|↩️","Rückgängig (Strg+Z)"],
   ["Speichern|#27ae60|keys|ctrl+s|💾","Speichern (Strg+S)"],["Mikrofon|#8e44ad|keys|ctrl+shift+m|🎤","Mikrofon (Strg+Shift+M)"],
+  ["3D|#16a085|nav|fusion|🧊","3D-Navigation (Touch-Fläche)"],
   ["Screenshot|#d35400|keys|win+shift+s|📷","Bildschirmausschnitt (Win+Shift+S)"],["Desktop|#34495e|keys|win+d|🖥️","Desktop anzeigen (Win+D)"],
   ["Task-\nmanager|#7f8c8d|keys|ctrl+shift+esc","Task-Manager"],
   ["Rechner|#16a085|run|calc|🧮","Programm: Rechner"],["Editor|#2c3e50|run|notepad|📝","Programm: Editor"],["Explorer|#f39c12|run|explorer|📁","Programm: Explorer"],
@@ -524,15 +531,17 @@ function renderTile(){
   if(t.type==="run") $("tRun").value=t.spec;
   if(t.type==="text") $("tText").value=t.spec;
   if(t.type==="host") $("tHost").value=t.spec;
+  if(t.type==="nav") $("tNav").value=t.spec||"fusion";
   if(t.type==="keys") parseKeys(t.spec);
 }
-function showAction(type){ ["media","keys","run","text","host"].forEach(a=>$("a"+a[0].toUpperCase()+a.slice(1)).classList.toggle("hidden", a!==type)); }
+function showAction(type){ ["media","keys","run","text","nav","host"].forEach(a=>$("a"+a[0].toUpperCase()+a.slice(1)).classList.toggle("hidden", a!==type)); }
 function setColor(c){ const t=tile(); if(!t) return; t.color=c; $("tColor").value=c; $("tColorHex").textContent=c; renderDeck(); }
 $("tColor").oninput = e => setColor(e.target.value);
 $("tLabel").oninput = e => { const t=tile(); t.label=e.target.value; renderDeck(); };
 $("tType").onchange = e => {
   const t=tile(); t.type=e.target.value; showAction(t.type);
-  t.spec = t.type==="media" ? MEDIA[0][0] : "";
+  t.spec = t.type==="media" ? MEDIA[0][0] : t.type==="nav" ? "fusion" : "";
+  if(t.type==="nav") $("tNav").value="fusion";
   if(t.type==="media"){ $("tMedia").value=t.spec; }
   if(t.type==="keys"){ parseKeys(""); }
   ["tRun","tText","tHost"].forEach(i=>$(i).value="");
@@ -541,6 +550,7 @@ $("tMedia").onchange = e => tile().spec=e.target.value;
 $("tRun").oninput = e => tile().spec=e.target.value;
 $("tText").oninput = e => tile().spec=e.target.value;
 $("tHost").oninput = e => tile().spec=e.target.value;
+$("tNav").onchange = e => tile().spec=e.target.value;
 $("tPreset").onchange = e => {
   const v=e.target.value; if(!v) return; const [label,color,type,spec,emoji]=v.split("|"); const t=tile();
   Object.assign(t,{label,color,type,spec,icon:""});

@@ -11,7 +11,8 @@ enum DeckActionType : uint8_t {
   ACT_TEXT,       // Text tippen, spec = der Text
   ACT_HOST,       // Nachricht an ein PC-Programm ueber CDC ("ACTION <spec>"), fuer spaeter
   ACT_RUN,        // Programm/Datei/Link starten: Win+R, Text tippen, Enter. spec z. B. "notepad" oder "C:\\Programme\\x.exe"
-  ACT_LAST = ACT_RUN
+  ACT_NAV,        // 3D-Navigation oeffnen (Touch-Flaeche wie eine Space Mouse); spec = Programm (fusion, shapr3d, bambu, blender) oder leer. Die UI behandelt sie selbst
+  ACT_LAST = ACT_NAV
 };
 
 #define DECK_SPEC_MAX 96
@@ -20,5 +21,5 @@ void deckActionsInit();                                           // Task + Wart
 bool deckActionRun(DeckActionType type, const char* spec);        // nicht blockierend; false = Queue voll
 bool deckActionValid(DeckActionType type, const char* spec);      // Syntaxpruefung (z. B. fuer Profil-Import)
 
-const char*    deckActionTypeName(DeckActionType t);              // "none" | "media" | "keys" | "text" | "host" | "run"
+const char*    deckActionTypeName(DeckActionType t);              // "none" | "media" | "keys" | "text" | "host" | "run" | "nav"
 DeckActionType deckActionTypeFromName(const char* name);          // unbekannt -> ACT_NONE
