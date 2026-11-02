@@ -2,6 +2,11 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v0.9.2 (2026-11-03)
+
+### Geändert
+- **3 Finger kurz antippen = „Alles einpassen“** in der 3D-Navigation (Fusion 360: F6, Bambu Studio: Z, Blender: Pos1; Shapr3D: noch keine Taste hinterlegt). Das Rollen durch Drehen der drei Finger gibt es nur noch in Blender. Die Kreisbahn der Maus für Programme ohne Rollen ist entfernt: Fusion 360, Shapr3D und Bambu Studio kennen kein Rollen per Maus, dort ruckelte sie nur
+
 ## v0.9.1 (2026-11-03)
 
 ### Behoben

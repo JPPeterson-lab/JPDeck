@@ -2,6 +2,11 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v0.9.2 (2026-11-03)
+
+### Changed
+- **Tapping 3 fingers briefly = "fit all"** in the 3D navigation (Fusion 360: F6, Bambu Studio: Z, Blender: Home; Shapr3D: no key stored yet). Rolling by rotating the three fingers now exists only in Blender. The circular mouse path for programs without roll is removed: Fusion 360, Shapr3D and Bambu Studio have no mouse roll, there it only jerked
+
 ## v0.9.1 (2026-11-03)
 
 ### Fixed

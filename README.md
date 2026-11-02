@@ -1,7 +1,7 @@
 # 🎛️ JPDeck
 
 ![Status](https://img.shields.io/badge/Status-Beta-yellow?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.9.1-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v0.9.2-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-Waveshare%20ESP32--S3--Touch--LCD--7B-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-7%22%201024×600%20RGB-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-MIT-blue?style=flat-square)
@@ -11,7 +11,7 @@
 
 Das Projekt ist ein **ESP-IDF-Projekt** (Arduino-ESP32 läuft als Komponente für `Serial`, LittleFS und ArduinoJson), ohne WLAN und ohne OTA.
 
-> **🟡 Beta (v0.9.1):** Der Kern ist fertig und läuft am Gerät und am Windows-PC (Tastatur, Medientasten, COM-Port, Editor, Icons, freie Kachelplätze, Schnellwahl). Keine Bildstreifen beim Speichern, kein Flimmern. Noch nicht ausführlich getestet sind Rechner, Timer, der Windows-Helfer und der Helfer-Modus; Dateiformate und Befehle können sich bis zur 1.0 noch ändern. Fehler bitte als [Issue](https://github.com/JPPeterson-lab/JPDeck/issues) melden.
+> **🟡 Beta (v0.9.2):** Der Kern ist fertig und läuft am Gerät und am Windows-PC (Tastatur, Medientasten, COM-Port, Editor, Icons, freie Kachelplätze, Schnellwahl). Keine Bildstreifen beim Speichern, kein Flimmern. Noch nicht ausführlich getestet sind Rechner, Timer, der Windows-Helfer und der Helfer-Modus; Dateiformate und Befehle können sich bis zur 1.0 noch ändern. Fehler bitte als [Issue](https://github.com/JPPeterson-lab/JPDeck/issues) melden.
 
 ---
 
@@ -49,7 +49,7 @@ Weitere Befehle: `bash build.sh` (nur bauen), `bash build.sh clean`, Pixeltakt `
 | Icons auf Kacheln (Emoji oder eigene Bilder) | ✅ am Gerät geprüft |
 | Programmstart (`run`) | ✅ geprüft |
 | **3D-Navigation** (Touch-Fläche wie eine Space Mouse: Drehen, Schwenken, Zoomen per Finger, Maus-Modus) | ✅ v0.8.0 am Gerät ausprobiert |
-| **3D-Rollen** (3 Finger) und **Streifen-Seiten** (Scrollrad, Zeitleiste, Zoom) | 🧪 neu in v0.9.0, ungetestet |
+| **3 Finger antippen = Alles einpassen** (Rollen nur Blender) und **Streifen-Seiten** (Scrollrad, Zeitleiste, Zoom) | 🧪 neu in v0.9.0, ungetestet |
 | **Display im Ruhezustand** (dimmen/aus, einstellbar im Editor, Antippen weckt) | 🧪 neu in v0.9.0, ungetestet |
 | **Live-Werte auf Kacheln** (Lautstärke, Mikrofon, CPU, RAM vom Helfer) und **schneller Programmstart** über den Helfer | 🧪 neu in v0.9.0, ungetestet |
 | Uhrzeit vom PC (setzt der Editor) | ✅ geprüft |
@@ -117,7 +117,7 @@ Im Editor **„Symbol wählen“** (Emoji) oder **„Bild laden …“** (PNG, J
 Eine Kachel vom Typ **3D-Navigation** öffnet eine leere Touch-Fläche, mit der Sie in CAD-Programmen die Ansicht bewegen, ähnlich einer Space Mouse: **1 Finger dreht**, **2 Finger schwenken**, **Auseinanderziehen zoomt**. Der erste Kontakt legt den Nullpunkt fest, die Fläche lässt sich also blind bedienen. Das JPDeck meldet sich dafür zusätzlich als **USB-Maus** und schickt Mausbewegung, Mausrad und gehaltene Tasten, so wie das Programm sie erwartet (Voreinstellungen für **Fusion 360, Shapr3D, Bambu Studio, Blender**). Kein Treiber nötig. Auf der Seite stellen Sie Modus (Touchpad oder Joystick), Empfindlichkeit und Zoomrichtung ein. Einzelheiten im [Wiki](https://github.com/JPPeterson-lab/JPDeck/wiki/3D-Navigation).
 
 ## ✨ Neu in v0.9.0
-- **3 Finger rollen** die Ansicht in der 3D-Navigation (Blender per Tastenfolge, sonst Kreisbahn der Maus). **Streifen-Seiten** (neuer Kacheltyp `strip`): Scrollrad, waagerechtes Scrollen, Zeitleiste Bild für Bild, Zoom.
+- **3 Finger kurz antippen = Alles einpassen** in der 3D-Navigation; Rollen per Drehung nur in Blender (Tastenfolge). **Streifen-Seiten** (neuer Kacheltyp `strip`): Scrollrad, waagerechtes Scrollen, Zeitleiste Bild für Bild, Zoom.
 - **Display-Ruhezustand:** nach einstellbarer Zeit abdunkeln oder ganz ausschalten, das erste Antippen weckt (löst keine Taste aus). Einstellung im Editor.
 - **Live-Werte auf Kacheln** (Lautstärke, Ton/Mikrofon stumm, CPU, RAM), gemeldet vom Windows-Helfer; **Programmstart sofort** über den Helfer. Einzelheiten im [Wiki](https://github.com/JPPeterson-lab/JPDeck/wiki/Live-Werte-und-Ruhezustand).
 
@@ -192,7 +192,7 @@ Siehe [CREDITS.md](CREDITS.md). GUI: [LVGL](https://lvgl.io). Oberfläche: [Pico
 
 The project is an **ESP-IDF project** (Arduino-ESP32 runs as a component for `Serial`, LittleFS and ArduinoJson), with no Wi-Fi and no OTA.
 
-> **🟡 Beta (v0.9.1):** The core is finished and runs on the device and on the Windows PC (keyboard, media keys, COM port, editor, icons, free tile positions, quick select). No streaks when saving, no flicker. Calculator, timer, the Windows helper and helper mode are not yet thoroughly tested; file formats and commands may still change before 1.0. Please report bugs as an [issue](https://github.com/JPPeterson-lab/JPDeck/issues).
+> **🟡 Beta (v0.9.2):** The core is finished and runs on the device and on the Windows PC (keyboard, media keys, COM port, editor, icons, free tile positions, quick select). No streaks when saving, no flicker. Calculator, timer, the Windows helper and helper mode are not yet thoroughly tested; file formats and commands may still change before 1.0. Please report bugs as an [issue](https://github.com/JPPeterson-lab/JPDeck/issues).
 
 ## 🚀 Installation
 
@@ -271,7 +271,7 @@ In the editor **"Symbol wählen"** (emoji) or **"Bild laden …"** (PNG, JPG, SV
 A tile of type **3D-Navigation** opens an empty touch surface for moving the view in CAD programs, similar to a Space Mouse: **1 finger orbits**, **2 fingers pan**, **spreading zooms**. The first contact sets the zero point, so the surface can be used blind. For this the JPDeck also enumerates as a **USB mouse** and sends mouse movement, wheel and held keys the way the program expects (presets for **Fusion 360, Shapr3D, Bambu Studio, Blender**). No driver needed. On the page you set the mode (touchpad or joystick), sensitivity and zoom direction. Details in the [wiki](https://github.com/JPPeterson-lab/JPDeck/wiki/3D-Navigation).
 
 ## ✨ New in v0.9.0
-- **3 fingers roll** the view in the 3D navigation (Blender via key sequence, otherwise a circular mouse path). **Strip pages** (new tile type `strip`): scroll wheel, horizontal scroll, frame-by-frame timeline, zoom.
+- **Tapping 3 fingers = fit all** in the 3D navigation; roll by rotating only in Blender (key sequence). **Strip pages** (new tile type `strip`): scroll wheel, horizontal scroll, frame-by-frame timeline, zoom.
 - **Display idle state:** dim or switch off after an adjustable time, the first touch wakes it (triggers no key). Set in the editor.
 - **Live values on tiles** (volume, sound/microphone muted, CPU, RAM) reported by the Windows helper; **instant program launch** through the helper. Details in the [wiki](https://github.com/JPPeterson-lab/JPDeck/wiki/Live-Werte-und-Ruhezustand).
 

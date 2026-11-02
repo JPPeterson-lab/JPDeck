@@ -30,17 +30,18 @@ struct View { const char* label; const char* keys; };  // Taste fuer eine feste 
 struct Roll { uint8_t left, right, mod; };            // Rollen per Tastendruck (HID-Code links/rechts + Modifier); left == 0: kein Tastenpaar
 struct Preset {
   const char* id; const char* name; Bind orbit, pan; const char* hint; View views[4]; Roll roll;
+  const char* fit;                                   // Tasten fuer "Alles einpassen" (3 Finger antippen), nullptr = nicht hinterlegt
 };
 static const Preset PRESETS[] = {
   { "fusion",  "Fusion 360",   { B_M, M_SHIFT }, { B_M, 0 }, nullptr,
-    { { "Einpassen", "f6" }, { "Home", "home" }, { nullptr, nullptr }, { nullptr, nullptr } }, { 0, 0, 0 } },
+    { { "Einpassen", "f6" }, { "Home", "home" }, { nullptr, nullptr }, { nullptr, nullptr } }, { 0, 0, 0 }, "f6" },
   { "shapr3d", "Shapr3D",      { B_R, 0 },       { B_M, 0 }, nullptr,
-    { { nullptr, nullptr }, { nullptr, nullptr }, { nullptr, nullptr }, { nullptr, nullptr } }, { 0, 0, 0 } },
+    { { nullptr, nullptr }, { nullptr, nullptr }, { nullptr, nullptr }, { nullptr, nullptr } }, { 0, 0, 0 }, nullptr },
   { "bambu",   "Bambu Studio", { B_L, 0 },       { B_R, 0 }, "Mauszeiger auf eine freie Stelle legen: Drehen nutzt die linke Taste und verschiebt sonst ein Objekt.",
-    { { "Alles", "z" }, { "Iso", "0" }, { "Oben", "1" }, { "Vorne", "3" } }, { 0, 0, 0 } },
+    { { "Alles", "z" }, { "Iso", "0" }, { "Oben", "1" }, { "Vorne", "3" } }, { 0, 0, 0 }, "z" },
   { "blender", "Blender",      { B_M, 0 },       { B_M, M_SHIFT }, nullptr,
     { { "Alles", "home" }, { nullptr, nullptr }, { nullptr, nullptr }, { nullptr, nullptr } },
-    { 0x5C, 0x5E, M_CTRL | M_SHIFT } },                // Blender: Ansicht rollen = Strg+Shift+Ziffernblock 4 / 6
+    { 0x5C, 0x5E, M_CTRL | M_SHIFT }, "home" },                // Blender: Ansicht rollen = Strg+Shift+Ziffernblock 4 / 6
 };
 static const int N_PRESETS = sizeof(PRESETS) / sizeof(PRESETS[0]);
 
@@ -72,6 +73,9 @@ struct Engine {
   float    rollAcc = 0, phi = 0, rollSmooth = 0; // 3 Finger: aufgelaufener Winkel bis zum naechsten Tastendruck, Winkel auf dem Kreis, geglaettete Drehung
   Pt       prev3[3];                             // 3 Finger: Positionen der letzten Messung
   bool     engaged = false;                      // die Beruehrung hat auf der Flaeche begonnen (dann zaehlen auch Finger ausserhalb)
+  uint32_t tapStart = 0, last3Ms = 0;            // 3 Finger: Beginn und letzte Messung mit drei Fingern (fuer das Antippen)
+  float    tapCx = 0, tapCy = 0, tapRot = 0;     // 3 Finger: Startmitte und aufgelaufene Drehung
+  bool     tapMoved = false;
   int      cand = 0, candN = 0;                  // Fingerzahl-Entprellung: neue Zahl und wie oft sie hintereinander gemessen wurde
 };
 static Engine E;
@@ -123,7 +127,11 @@ static int collect(const LvglTouchSnapshot& t, Pt* out)
 
 static void capture(const Pt* p, int n)
 {
-  if (n == 3) { for (int i = 0; i < 3; i++) E.prev3[i] = p[i]; E.rollAcc = 0; E.phi = 0; E.rollSmooth = 0; }
+  if (n == 3) {
+    for (int i = 0; i < 3; i++) E.prev3[i] = p[i];
+    E.rollAcc = 0; E.phi = 0; E.rollSmooth = 0; E.tapRot = 0;
+    E.tapCx = (p[0].x + p[1].x + p[2].x) / 3; E.tapCy = (p[0].y + p[1].y + p[2].y) / 3;
+  }
   if (n == 1) { E.orgX = E.baseX = p[0].x; E.orgY = E.baseY = p[0].y; E.orgDist = E.baseDist = 0; }
   else if (n == 2) {
     E.orgX = E.baseX = (p[0].x + p[1].x) / 2; E.orgY = E.baseY = (p[0].y + p[1].y) / 2;
@@ -214,22 +222,18 @@ static const char* gestureTick(const Pt* p, int n, float dt)
     if (fabsf(da) > 0.6f) da = 0;                                // Ausreisser (falsche Zuordnung): ignorieren
     E.rollSmooth = 0.55f * E.rollSmooth + 0.45f * da;            // glaetten, sonst ruckelt der Winkel mit dem Rauschen des Sensors
     da = fabsf(E.rollSmooth) < 0.0015f ? 0.0f : E.rollSmooth;
+    E.tapRot += fabsf(da);
+    if (E.tapRot > 0.35f || hypotf(cx - E.tapCx, cy - E.tapCy) > 25.0f) E.tapMoved = true;   // bewegt: kein Antippen mehr
     if (P.roll.left) {                                // Programm mit Tastenpaar (Blender): alle 12 Grad ein Tastendruck
       E.rollAcc += da * gain;
       const float step = 0.21f;
       while (E.rollAcc >= step)  { usbKeyTapAsync(P.roll.right, P.roll.mod); E.rollAcc -= step; }
       while (E.rollAcc <= -step) { usbKeyTapAsync(P.roll.left,  P.roll.mod); E.rollAcc += step; }
-    } else {                                          // ohne Rollen im Programm: Mausbahn im Kreis (wirkt bei freiem Orbit/Trackball)
-      if (!E.pressed) { if (fabsf(da) < 0.004f) return "Rollen"; pressGesture(P.orbit); }
-      const float R = 180.0f * gain;
-      E.phi += da;
-      E.remX += -sinf(E.phi) * R * da;
-      E.remY +=  cosf(E.phi) * R * da;
-      int ix = (int)E.remX, iy = (int)E.remY;
-      E.remX -= ix; E.remY -= iy;
-      sendMove(ix, iy, 0);
+      if (E.tapMoved) return "Rollen";
+    } else if (E.tapMoved) {
+      return "";                                       // ohne Rollen im Programm bewirkt Bewegen mit 3 Fingern nichts
     }
-    return "Rollen";
+    return "antippen = Einpassen";
   }
   return "";
 }
@@ -261,7 +265,7 @@ static void refreshLabels()
     if (P.views[i].label) { lv_label_set_text(lv_obj_get_child(btnViews[i], 0), P.views[i].label); lv_obj_clear_flag(btnViews[i], LV_OBJ_FLAG_HIDDEN); }
     else lv_obj_add_flag(btnViews[i], LV_OBJ_FLAG_HIDDEN);
   }
-  lv_label_set_text(lblHint, P.hint ? P.hint : (ns.mode ? "Joystick: Finger auslenken, Absetzen beendet.\n1 Finger drehen, 2 Finger schwenken, Abstand = Zoom, 3 Finger rollen." : "1 Finger drehen\n2 Finger schwenken\nAbstand der Finger = Zoom\n3 Finger drehen = Rollen"));
+  lv_label_set_text(lblHint, P.hint ? P.hint : (ns.mode ? "Joystick: Finger auslenken, Absetzen beendet.\n1 Finger drehen, 2 Finger schwenken, Abstand = Zoom, 3 Finger antippen = Alles einpassen." : "1 Finger drehen\n2 Finger schwenken\nAbstand der Finger = Zoom\n3 Finger antippen = Alles einpassen"));
 }
 
 static void closeScreen()
@@ -329,6 +333,19 @@ static void setStatus(const char* text)
   if (strcmp(lv_label_get_text(lblStatus), text) != 0) lv_label_set_text(lblStatus, text);
 }
 
+static uint32_t s_flashUntil = 0;                      // bis dahin bleibt die Meldung nach dem Antippen stehen
+
+// Drei Finger kurz aufgesetzt und nicht bewegt: "Alles einpassen"
+static void finishThree()
+{
+  if (E.tapMoved || E.last3Ms - E.tapStart > 450) return;
+  const Preset& P = curPreset();
+  if (P.fit) { deckActionRun(ACT_KEYS, P.fit); setStatus("Alles einpassen"); }
+  else setStatus("Einpassen: keine Taste hinterlegt");
+  s_lastN = 0xFF;
+  s_flashUntil = millis() + 1200;
+}
+
 static void tickCb(lv_timer_t*)
 {
   if (!scr) return;
@@ -354,21 +371,24 @@ static void tickCb(lv_timer_t*)
     if (E.n == 3 && raw == 2) need = 8;
     else if (E.n == 2 && raw == 1) need = 4;
     if (E.cand >= need) {
+      if (E.n == 3) finishThree();
       releaseGesture();
       E.n = raw; E.settle = 3; E.cand = 0;
       capture(p, raw);
+      if (raw == 3) { E.tapStart = E.last3Ms = now; E.tapMoved = false; }
     } else {
       return;                                          // Zahl noch unsicher: diese Messung auslassen
     }
   }
 
+  if (raw == 3 && E.n == 3) E.last3Ms = now;
   const char* what = "";
   if (E.n >= 1 && E.n <= 3 && raw == E.n) {
     if (E.settle > 0) { E.settle--; capture(p, E.n); }  // die ersten Messungen nach dem Aufsetzen sind unruhig
     else what = gestureTick(p, E.n, dt);
   }
 
-  if (E.n != s_lastN || what[0]) {
+  if ((E.n != s_lastN || what[0]) && (int32_t)(millis() - s_flashUntil) >= 0) {
     s_lastN = (uint8_t)E.n;
     char b[48];
     if (!usbHostConnected()) setStatus("PC nicht verbunden");
